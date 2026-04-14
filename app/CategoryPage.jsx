@@ -47,6 +47,37 @@ export const CATEGORIES = [
   { en: "summer-dresses",      pt: "Moda verão",         slug: "moda-verao" },
 ];
 
+const SEO = {
+  "wireless-headphones": {
+    title: "Top 10 Melhores Auscultadores Wireless Portugal 2026",
+    description: "Descobre os 10 melhores auscultadores wireless disponíveis em Portugal em 2026. Lista atualizada diariamente por IA com preços e onde comprar.",
+  },
+  "robot-vacuums": {
+    title: "Top 10 Melhores Robots Aspiradores Portugal 2026",
+    description: "Os 10 melhores robots aspiradores disponíveis em Portugal em 2026. Comparação de preços na Worten, Fnac e Amazon. Atualizado diariamente por IA.",
+  },
+  "running-shoes": {
+    title: "Top 10 Melhores Sapatilhas de Corrida Portugal 2026",
+    description: "As 10 melhores sapatilhas de corrida disponíveis em Portugal em 2026. Lista atualizada diariamente por inteligência artificial.",
+  },
+  "air-fryers": {
+    title: "Top 10 Melhores Fritadeiras de Ar Portugal 2026",
+    description: "As 10 melhores fritadeiras de ar disponíveis em Portugal em 2026. Preços e lojas atualizados diariamente por IA.",
+  },
+  "laptops": {
+    title: "Top 10 Melhores Portáteis até 800€ Portugal 2026",
+    description: "Os 10 melhores portáteis disponíveis em Portugal em 2026. Lista atualizada diariamente com preços reais na Worten, Fnac e Amazon.",
+  },
+  "sunscreen": {
+    title: "Top 10 Melhores Protetores Solares Portugal 2026",
+    description: "Os 10 melhores protetores solares disponíveis em Portugal em 2026. Lista atualizada diariamente por inteligência artificial.",
+  },
+  "summer-dresses": {
+    title: "Top 10 Melhores Vestidos de Verão Portugal 2026",
+    description: "Os 10 vestidos de verão mais populares disponíveis em Portugal em 2026. Lista atualizada diariamente por IA com preços e onde comprar.",
+  },
+};
+
 function RankBadge({ rank }) {
   if (rank === 1) return <span style={{ fontSize: 22, lineHeight: 1 }}>🥇</span>;
   if (rank === 2) return <span style={{ fontSize: 22, lineHeight: 1 }}>🥈</span>;
@@ -123,9 +154,12 @@ function SkeletonCard() {
 export default function CategoryPage({ categoryEn }) {
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   const currentCat = CATEGORIES.find(c => c.en === categoryEn) || CATEGORIES[0];
+  const seo = SEO[categoryEn] || {
+    title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
+    description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
+  };
 
   const todayFormatted = new Date().toLocaleDateString("pt-PT", {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
@@ -150,6 +184,11 @@ export default function CategoryPage({ categoryEn }) {
 
   return (
     <>
+      <Head>
+        <title>{seo.title}</title>
+        <meta name="description" content={seo.description} />
+      </Head>
+
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -177,7 +216,7 @@ export default function CategoryPage({ categoryEn }) {
           </div>
         </header>
 
-        {/* Category tabs — each is a real link */}
+        {/* Category tabs */}
         <div style={{ background: "#fff", borderBottom: "1px solid #e5e5e5" }}>
           <div style={{ maxWidth: 780, margin: "0 auto", padding: "12px 24px", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
             {CATEGORIES.map(cat => (
@@ -224,6 +263,28 @@ export default function CategoryPage({ categoryEn }) {
                 .map((item, i) => <ProductCard key={item.rank} item={item} index={i} />)
             )}
           </div>
+
+          {/* Internal links — SEO boost */}
+          {!loading && (
+            <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1px solid #e5e5e5" }}>
+              <p style={{ fontSize: 12, fontWeight: 500, color: "#888", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>
+                Ver também
+              </p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                {CATEGORIES
+                  .filter(c => c.en !== categoryEn)
+                  .map(cat => (
+                    <a key={cat.en} href={`/${cat.slug}`} style={{
+                      fontSize: 13, padding: "7px 16px", borderRadius: 999,
+                      border: "1px solid #ddd", color: "#555",
+                      textDecoration: "none", background: "#fff",
+                    }}>
+                      {cat.pt}
+                    </a>
+                  ))}
+              </div>
+            </div>
+          )}
 
           {!loading && list && (
             <p style={{ marginTop: 24, fontSize: 11, color: "#bbb", textAlign: "center", lineHeight: 1.6 }}>
