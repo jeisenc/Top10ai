@@ -58,8 +58,10 @@ Return only the JSON. Nothing else.`
     }],
   });
 
-  const raw = msg.content[0].text.trim();
-  return JSON.parse(raw);
+  let raw = msg.content[0].text.trim();
+// Strip markdown code fences if Claude added them
+raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+return JSON.parse(raw);
 }
 
 async function main() {
