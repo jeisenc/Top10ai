@@ -7,6 +7,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pt">
       <head>
+        <meta name="google-site-verification" content="6QnVFuih8z416buOe7OoE8ux9fM78ilKEa2hhZzK2yc" />
         <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8110743153083591"
