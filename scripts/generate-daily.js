@@ -27,7 +27,7 @@ Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
 async function generateList(category, date) {
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
-    max_tokens: 1000,
+    max_tokens: 4000,
     system: SYSTEM_PROMPT,
     messages: [{
       role: "user",
