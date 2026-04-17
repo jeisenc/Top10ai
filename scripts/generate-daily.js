@@ -81,6 +81,11 @@ async function main() {
   }
 
   console.log("Done! List saved to database.");
+
+// Tell Vercel to refresh all pages
+const revalidateUrl = `https://ai10pt.top/api/revalidate?secret=${process.env.REVALIDATE_SECRET}`;
+await fetch(revalidateUrl, { method: "POST" });
+console.log("Vercel cache cleared.");
 }
 
 main().catch((err) => {
