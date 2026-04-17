@@ -37,16 +37,6 @@ const STORE_COLORS = {
   Zalando:   { bg: "#fff0f3", color: "#9b1b30" },
 };
 
-export const CATEGORIES = [
-  { en: "wireless-headphones", pt: "Auscultadores",      slug: "auscultadores" },
-  { en: "robot-vacuums",       pt: "Robots aspiradores", slug: "robots-aspiradores" },
-  { en: "running-shoes",       pt: "Sapatilhas",         slug: "sapatilhas" },
-  { en: "air-fryers",          pt: "Fritadeiras de ar",  slug: "fritadeiras-de-ar" },
-  { en: "laptops",             pt: "Portáteis",          slug: "portateis" },
-  { en: "sunscreen",           pt: "Protetor solar",     slug: "protetor-solar" },
-  { en: "summer-dresses",      pt: "Moda verão",         slug: "moda-verao" },
-];
-
 const SEO = {
   "wireless-headphones": {
     title: "Top 10 Melhores Auscultadores Wireless Portugal 2026",
@@ -154,8 +144,8 @@ function SkeletonCard() {
 export default function CategoryPage({ categoryEn }) {
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
 
-  const currentCat = CATEGORIES.find(c => c.en === categoryEn) || CATEGORIES[0];
   const seo = SEO[categoryEn] || {
     title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
     description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
@@ -165,6 +155,28 @@ export default function CategoryPage({ categoryEn }) {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
   });
 
+  // Fetch all categories dynamically from Supabase
+  useEffect(() => {
+    async function fetchCategories() {
+      const { data } = await supabase
+        .from("daily_lists")
+        .select("category, category_pt")
+        .order("created_at", { ascending: false });
+
+      if (data) {
+        const seen = new Set();
+        const unique = data.filter(row => {
+          if (seen.has(row.category)) return false;
+          seen.add(row.category);
+          return true;
+        });
+        setCategories(unique);
+      }
+    }
+    fetchCategories();
+  }, []);
+
+  // Fetch the list for this category
   useEffect(() => {
     async function fetchList() {
       setLoading(true);
@@ -216,16 +228,16 @@ export default function CategoryPage({ categoryEn }) {
           </div>
         </header>
 
-        {/* Category tabs */}
+        {/* Category tabs — dynamic from Supabase */}
         <div style={{ background: "#fff", borderBottom: "1px solid #e5e5e5" }}>
           <div style={{ maxWidth: 780, margin: "0 auto", padding: "12px 24px", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
-            {CATEGORIES.map(cat => (
+            {categories.map(cat => (
               <a
-                key={cat.en}
-                href={`/${cat.slug}`}
-                className={`cat-btn${cat.en === categoryEn ? " active" : ""}`}
+                key={cat.category}
+                href={`/${cat.category}`}
+                className={`cat-btn${cat.category === categoryEn ? " active" : ""}`}
               >
-                {cat.pt}
+                {cat.category_pt}
               </a>
             ))}
           </div>
@@ -238,7 +250,7 @@ export default function CategoryPage({ categoryEn }) {
               Top 10 do dia
             </div>
             <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(26px, 5vw, 36px)", fontWeight: 800, lineHeight: 1.15, color: "#0f0f0f", marginBottom: 10, letterSpacing: "-0.5px" }}>
-              {loading ? "A carregar..." : list?.category_pt || currentCat.pt}
+              {loading ? "A carregar..." : list?.category_pt || categoryEn}
             </h1>
             {!loading && list?.headline && (
               <p style={{ fontSize: 15, color: "#555", lineHeight: 1.6, maxWidth: 580 }}>{list.headline}</p>
@@ -264,22 +276,22 @@ export default function CategoryPage({ categoryEn }) {
             )}
           </div>
 
-          {/* Internal links — SEO boost */}
-          {!loading && (
+          {/* Internal links — dynamic from Supabase */}
+          {!loading && categories.length > 0 && (
             <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1px solid #e5e5e5" }}>
               <p style={{ fontSize: 12, fontWeight: 500, color: "#888", textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>
                 Ver também
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {CATEGORIES
-                  .filter(c => c.en !== categoryEn)
+                {categories
+                  .filter(c => c.category !== categoryEn)
                   .map(cat => (
-                    <a key={cat.en} href={`/${cat.slug}`} style={{
+                    <a key={cat.category} href={`/${cat.category}`} style={{
                       fontSize: 13, padding: "7px 16px", borderRadius: 999,
                       border: "1px solid #ddd", color: "#555",
                       textDecoration: "none", background: "#fff",
                     }}>
-                      {cat.pt}
+                      {cat.category_pt}
                     </a>
                   ))}
               </div>
