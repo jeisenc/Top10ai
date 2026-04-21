@@ -1,6 +1,11 @@
 export const metadata = {
   title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
   description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+  },
 };
 
 export default function RootLayout({ children }) {
