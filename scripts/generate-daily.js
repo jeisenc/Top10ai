@@ -7,14 +7,13 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-const SYSTEM_PROMPT = `You are a product recommendation engine for aitop10.pt, a Portuguese consumer website.
+const SYSTEM_PROMPT = `You are a product recommendation engine for ai10pt.top, a Portuguese consumer website.
 Generate Top 10 product lists for Portuguese shoppers.
 All text must be in European Portuguese (not Brazilian).
 Products must be available in Portugal via Worten, Fnac, Amazon.es, Decathlon, or Zalando.
 Prices must be realistic in euros.
 Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
 
-// Convert text to a URL-friendly slug
 function toSlug(text) {
   return text
     .toLowerCase()
@@ -25,7 +24,6 @@ function toSlug(text) {
     .replace(/\s+/g, "-");
 }
 
-// Step 1 — Fetch trending searches from Google Trends for Portugal
 async function fetchGoogleTrends() {
   try {
     const response = await fetch(
@@ -33,14 +31,11 @@ async function fetchGoogleTrends() {
       { headers: { "User-Agent": "Mozilla/5.0" } }
     );
     const xml = await response.text();
-
-    // Extract titles from RSS feed
     const matches = xml.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g) || [];
     const trends = matches
       .map(m => m.replace(/<title><!\[CDATA\[/, "").replace(/\]\]><\/title>/, ""))
       .filter(t => t !== "Daily Search Trends")
       .slice(0, 10);
-
     console.log("Google Trends Portugal:", trends);
     return trends;
   } catch (err) {
@@ -49,7 +44,6 @@ async function fetchGoogleTrends() {
   }
 }
 
-// Step 2 — Ask Claude to pick the best product category based on trends + season
 async function pickCategory(trends, date) {
   const today = new Date(date);
   const month = today.toLocaleString("pt-PT", { month: "long" });
@@ -90,7 +84,6 @@ Return ONLY this JSON structure, nothing else:
   return JSON.parse(raw);
 }
 
-// Step 3 — Generate the Top 10 list for the chosen category
 async function generateList(category, date) {
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
@@ -131,6 +124,35 @@ Return only the JSON. Nothing else.`
   return JSON.parse(raw);
 }
 
+async function generateFAQs(category) {
+  const msg = await anthropic.messages.create({
+    model: "claude-sonnet-4-20250514",
+    max_tokens: 1500,
+    messages: [{
+      role: "user",
+      content: `Generate 7 frequently asked questions in European Portuguese about the product category: "${category.category_pt}"
+
+These should be real questions that Portuguese consumers search on Google when buying these products.
+Include questions about: how to choose, price ranges, best brands, where to buy in Portugal, comparisons, common problems.
+
+Return ONLY this JSON structure, nothing else:
+{
+  "faqs": [
+    {
+      "question": "Qual é o melhor...?",
+      "answer": "A resposta detalhada em 2-3 frases em português europeu."
+    }
+  ]
+}`
+    }]
+  });
+
+  let raw = msg.content[0].text.trim();
+  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+  const parsed = JSON.parse(raw);
+  return parsed.faqs;
+}
+
 function getSeason(month) {
   if (month >= 2 && month <= 4) return "Spring (Primavera)";
   if (month >= 5 && month <= 7) return "Summer (Verão)";
@@ -157,7 +179,13 @@ async function main() {
   const list = await generateList(category, today);
   console.log(`✅ Generated ${list.items.length} items`);
 
-  // Step 4 — Save to Supabase
+  // Step 4 — Generate FAQs
+  console.log("\n❓ Generating FAQs...");
+  const faqs = await generateFAQs(category);
+  list.faqs = faqs;
+  console.log(`✅ Generated ${faqs.length} FAQs`);
+
+  // Step 5 — Save to Supabase
   console.log("\n💾 Saving to Supabase...");
   const { error } = await supabase.from("daily_lists").insert(list);
   if (error) {
@@ -166,7 +194,7 @@ async function main() {
   }
 
   console.log(`\n✅ Done! Today's Top 10: ${category.category_pt}`);
-  console.log(`   URL will be: ai10pt.top/${category.slug}`);
+  console.log(`   URL: ai10pt.top/${category.slug}`);
 }
 
 main().catch((err) => {
