@@ -93,7 +93,6 @@ function ProductCard({ item, index }) {
       borderRadius: 16,
       animation: "fadeUp 0.3s ease both",
       animationDelay: `${index * 50}ms`,
-      transition: "box-shadow 0.15s",
     }}>
       <div style={{ minWidth: 32, display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 2 }}>
         <RankBadge rank={item.rank} />
@@ -121,6 +120,47 @@ function ProductCard({ item, index }) {
           Ver oferta →
         </a>
       </div>
+    </div>
+  );
+}
+
+function FAQItem({ faq, index }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div style={{
+      background: "#fff", border: "1.5px solid #ede9e4",
+      borderRadius: 12, overflow: "hidden",
+      animation: "fadeUp 0.3s ease both",
+      animationDelay: `${index * 40}ms`,
+    }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{
+          width: "100%", display: "flex", alignItems: "center",
+          justifyContent: "space-between", gap: 16,
+          padding: "16px 20px", background: "none", border: "none",
+          cursor: "pointer", textAlign: "left",
+        }}
+      >
+        <span style={{ fontSize: 14, fontWeight: 600, color: "#1a1a1a", lineHeight: 1.4, flex: 1 }}>
+          {faq.question}
+        </span>
+        <span style={{
+          fontSize: 18, color: "#e8593c", fontWeight: 700,
+          transition: "transform 0.2s", flexShrink: 0,
+          transform: open ? "rotate(45deg)" : "rotate(0deg)",
+          display: "inline-block",
+        }}>
+          +
+        </span>
+      </button>
+      {open && (
+        <div style={{ padding: "0 20px 16px", borderTop: "1px solid #f5f2ee" }}>
+          <p style={{ fontSize: 13, color: "#666", lineHeight: 1.7, marginTop: 12 }}>
+            {faq.answer}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
@@ -155,6 +195,20 @@ export default function CategoryPage({ slug }) {
   const todayFormatted = new Date().toLocaleDateString("pt-PT", {
     weekday: "long", year: "numeric", month: "long", day: "numeric"
   });
+
+  // FAQ Schema for Google rich snippets
+  const faqSchema = list?.faqs ? {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": list.faqs.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  } : null;
 
   useEffect(() => {
     async function fetchCategories() {
@@ -199,6 +253,12 @@ export default function CategoryPage({ slug }) {
       <Head>
         <title>{seo.title}</title>
         <meta name="description" content={seo.description} />
+        {faqSchema && (
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+          />
+        )}
       </Head>
 
       <style>{`
@@ -219,10 +279,10 @@ export default function CategoryPage({ slug }) {
         <header style={{ background: "#fff", borderBottom: "1.5px solid #ede9e4", padding: "0 24px", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", height: 64, gap: 24 }}>
             <a href="/" style={{ display: "flex", alignItems: "baseline", gap: 0, textDecoration: "none", flexShrink: 0 }}>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>ai</span>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#e8593c", letterSpacing: "-0.5px" }}>10</span>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>ai</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#e8593c", letterSpacing: "-0.5px" }}>10</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
             </a>
 
             <div style={{ flex: 1, overflow: "hidden" }}>
@@ -244,6 +304,8 @@ export default function CategoryPage({ slug }) {
 
         {/* Main content */}
         <main style={{ maxWidth: 820, margin: "0 auto", padding: "40px 24px" }}>
+
+          {/* Page header */}
           <div style={{ marginBottom: 32, animation: "fadeUp 0.4s ease both" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff8f6", border: "1.5px solid #fdd0c4", borderRadius: 999, padding: "4px 12px", marginBottom: 14 }}>
               <span style={{ fontSize: 11, fontWeight: 700, color: "#e8593c", textTransform: "uppercase", letterSpacing: "0.5px" }}>Top 10 do dia</span>
@@ -263,6 +325,7 @@ export default function CategoryPage({ slug }) {
             </div>
           </div>
 
+          {/* Product list */}
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {loading ? (
               Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
@@ -276,6 +339,26 @@ export default function CategoryPage({ slug }) {
                 .map((item, i) => <ProductCard key={item.rank} item={item} index={i} />)
             )}
           </div>
+
+          {/* FAQ Section */}
+          {!loading && list?.faqs?.length > 0 && (
+            <div style={{ marginTop: 56 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>
+                  Perguntas frequentes
+                </h2>
+                <div style={{ flex: 1, height: 1, background: "#ede9e4" }} />
+              </div>
+              <p style={{ fontSize: 13, color: "#999", marginBottom: 20, lineHeight: 1.6 }}>
+                As questões mais comuns sobre {list.category_pt?.toLowerCase()} — respondidas por IA com base em pesquisas reais de portugueses.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {list.faqs.map((faq, i) => (
+                  <FAQItem key={i} faq={faq} index={i} />
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Internal links */}
           {!loading && categories.length > 0 && (
@@ -291,7 +374,6 @@ export default function CategoryPage({ slug }) {
                       fontSize: 13, fontWeight: 600, padding: "8px 18px", borderRadius: 999,
                       border: "1.5px solid #e0ddd8", color: "#666",
                       textDecoration: "none", background: "#fff",
-                      transition: "all 0.15s",
                     }}>
                       {cat.category_pt}
                     </a>
@@ -312,15 +394,15 @@ export default function CategoryPage({ slug }) {
         <div style={{ background: "#1a1a1a", padding: "40px 24px", marginTop: 48 }}>
           <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 20 }}>
             <div>
-              <p style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 4, letterSpacing: "-0.5px" }}>
+              <p style={{ fontSize: 20, fontWeight: 800, color: "#fff", marginBottom: 4, letterSpacing: "-0.5px" }}>
                 Recebe o Top 10 todos os dias
               </p>
               <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)" }}>Newsletter gratuita. Sem spam. Cancela quando quiseres.</p>
             </div>
             <div style={{ display: "flex", gap: 8 }}>
               <input type="email" placeholder="o-teu-email@gmail.com"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, padding: "11px 18px", borderRadius: 10, border: "1px solid #333", background: "#2a2a2a", color: "#fff", outline: "none", width: 230 }} />
-              <button style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 13, fontWeight: 700, padding: "11px 20px", borderRadius: 10, background: "#e8593c", color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                style={{ fontSize: 14, padding: "11px 18px", borderRadius: 10, border: "1px solid #333", background: "#2a2a2a", color: "#fff", outline: "none", width: 230 }} />
+              <button style={{ fontSize: 13, fontWeight: 700, padding: "11px 20px", borderRadius: 10, background: "#e8593c", color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
                 Subscrever
               </button>
             </div>
