@@ -39,7 +39,7 @@ async function fetchGoogleTrends() {
     console.log("Google Trends Portugal:", trends);
     return trends;
   } catch (err) {
-    console.log("Could not fetch Google Trends, using fallback:", err.message);
+    console.log("Could not fetch Google Trends:", err.message);
     return [];
   }
 }
@@ -48,7 +48,6 @@ async function pickCategory(trends, date) {
   const today = new Date(date);
   const month = today.toLocaleString("pt-PT", { month: "long" });
   const season = getSeason(today.getMonth());
-
   const trendsText = trends.length > 0
     ? `Trending searches in Portugal today: ${trends.join(", ")}`
     : "No trending data available.";
@@ -58,23 +57,16 @@ async function pickCategory(trends, date) {
     max_tokens: 500,
     messages: [{
       role: "user",
-      content: `You are helping choose the best product category for a Portuguese shopping website today.
-
-Date: ${date}
-Month: ${month}
-Season: ${season}
+      content: `Choose the best product category for a Portuguese shopping website today.
+Date: ${date}, Month: ${month}, Season: ${season}
 ${trendsText}
 
-Based on the trending searches AND the current season/date in Portugal, choose ONE product category that Portuguese consumers are most likely searching for RIGHT NOW.
-
-Consider: seasonal relevance, trending topics, upcoming holidays, weather, back to school, sports seasons etc.
-
-Return ONLY this JSON structure, nothing else:
+Return ONLY this JSON:
 {
-  "category_en": "english-slug-no-spaces",
+  "category_en": "english-slug",
   "category_pt": "Nome em Português",
-  "slug": "slug-em-portugues",
-  "reasoning": "brief explanation of why this category was chosen"
+  "slug": "slug-portugues",
+  "reasoning": "brief explanation"
 }`
     }]
   });
@@ -94,28 +86,27 @@ async function generateList(category, date) {
       content: `Category: ${category.category_pt}
 Date: ${date}
 
-Generate a Top 10 product list. Return this exact JSON structure:
+Generate Top 10. Return this JSON:
 {
   "category": "${category.category_en}",
   "category_pt": "${category.category_pt}",
   "slug": "${category.slug}",
   "date": "${date}",
-  "headline": "one punchy sentence in Portuguese summarising the list",
+  "headline": "sentence in Portuguese",
   "items": [
     {
       "rank": 1,
-      "name": "Brand + Model",
+      "name": "Brand Model",
       "price_eur": 99,
       "store": "Worten",
-      "store_url_hint": "search query to find it",
-      "reason_pt": "1-2 sentences in Portuguese explaining why recommended",
+      "store_url_hint": "search query",
+      "reason_pt": "1-2 sentences in Portuguese",
       "tag": "Melhor escolha"
     }
   ]
 }
-
-Tags must be one of: Melhor escolha, Melhor preço, Mais vendido, Premium, Económico
-Return only the JSON. Nothing else.`
+Tags: Melhor escolha, Melhor preço, Mais vendido, Premium, Económico
+Return only JSON.`
     }]
   });
 
@@ -130,18 +121,12 @@ async function generateFAQs(category) {
     max_tokens: 1500,
     messages: [{
       role: "user",
-      content: `Generate 7 frequently asked questions in European Portuguese about the product category: "${category.category_pt}"
-
-These should be real questions that Portuguese consumers search on Google when buying these products.
-Include questions about: how to choose, price ranges, best brands, where to buy in Portugal, comparisons, common problems.
-
-Return ONLY this JSON structure, nothing else:
+      content: `Generate 7 FAQs in European Portuguese about: "${category.category_pt}"
+Real questions Portuguese consumers search on Google.
+Return ONLY this JSON:
 {
   "faqs": [
-    {
-      "question": "Qual é o melhor...?",
-      "answer": "A resposta detalhada em 2-3 frases em português europeu."
-    }
+    { "question": "Qual é o melhor...?", "answer": "Resposta em 2-3 frases." }
   ]
 }`
     }]
@@ -149,8 +134,33 @@ Return ONLY this JSON structure, nothing else:
 
   let raw = msg.content[0].text.trim();
   raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-  const parsed = JSON.parse(raw);
-  return parsed.faqs;
+  return JSON.parse(raw).faqs;
+}
+
+// Fetch best Portuguese YouTube review for a product
+async function fetchYouTubeVideo(productName) {
+  try {
+    const query = encodeURIComponent(`${productName} review análise português portugal`);
+    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&relevanceLanguage=pt&regionCode=PT&maxResults=3&key=${process.env.YOUTUBE_API_KEY}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.items && data.items.length > 0) {
+      // Pick first result that has a reasonable title
+      const video = data.items[0];
+      return {
+        videoId: video.id.videoId,
+        title: video.snippet.title,
+        channelTitle: video.snippet.channelTitle,
+        thumbnail: video.snippet.thumbnails?.medium?.url || null,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.log(`  Could not fetch YouTube video for ${productName}:`, err.message);
+    return null;
+  }
 }
 
 function getSeason(month) {
@@ -164,17 +174,17 @@ async function main() {
   const today = new Date().toISOString().split("T")[0];
   console.log(`\n🚀 Starting daily generation for ${today}`);
 
-  // Step 1 — Get Google Trends
+  // Step 1 — Google Trends
   console.log("\n📈 Fetching Google Trends for Portugal...");
   const trends = await fetchGoogleTrends();
 
-  // Step 2 — Claude picks the best category
+  // Step 2 — Pick category
   console.log("\n🤖 Asking Claude to pick today's category...");
   const category = await pickCategory(trends, today);
-  console.log(`✅ Category chosen: ${category.category_pt} (${category.slug})`);
+  console.log(`✅ Category: ${category.category_pt} (${category.slug})`);
   console.log(`   Reason: ${category.reasoning}`);
 
-  // Step 3 — Generate the Top 10
+  // Step 3 — Generate Top 10
   console.log("\n📝 Generating Top 10 list...");
   const list = await generateList(category, today);
   console.log(`✅ Generated ${list.items.length} items`);
@@ -185,7 +195,23 @@ async function main() {
   list.faqs = faqs;
   console.log(`✅ Generated ${faqs.length} FAQs`);
 
-  // Step 5 — Save to Supabase
+  // Step 5 — Fetch YouTube videos for each product
+  console.log("\n🎬 Fetching YouTube videos...");
+  for (let i = 0; i < list.items.length; i++) {
+    const item = list.items[i];
+    console.log(`  Searching video for: ${item.name}...`);
+    const video = await fetchYouTubeVideo(item.name);
+    if (video) {
+      item.youtube = video;
+      console.log(`  ✅ Found: ${video.title}`);
+    } else {
+      console.log(`  ⚠️  No video found`);
+    }
+    // Small delay to avoid YouTube API rate limits
+    await new Promise(r => setTimeout(r, 200));
+  }
+
+  // Step 6 — Save to Supabase
   console.log("\n💾 Saving to Supabase...");
   const { error } = await supabase.from("daily_lists").insert(list);
   if (error) {
