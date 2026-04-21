@@ -79,6 +79,75 @@ function RankBadge({ rank }) {
   );
 }
 
+// YouTube video embed — thumbnail that expands inline when tapped
+function YouTubeEmbed({ video }) {
+  const [playing, setPlaying] = useState(false);
+
+  if (!video?.videoId) return null;
+
+  return (
+    <div style={{ marginTop: 10, borderRadius: 10, overflow: "hidden", border: "1px solid #f0ede8" }}>
+      {playing ? (
+        <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
+          <iframe
+            src={`https://www.youtube.com/embed/${video.videoId}?autoplay=1&rel=0`}
+            style={{ position: "absolute", top: 0, left: 0, width: "100%", height: "100%", border: "none" }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      ) : (
+        <button
+          onClick={() => setPlaying(true)}
+          style={{
+            width: "100%", border: "none", padding: 0,
+            background: "none", cursor: "pointer",
+            display: "block", position: "relative",
+            WebkitTapHighlightColor: "transparent",
+          }}
+        >
+          {/* Thumbnail */}
+          <img
+            src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
+            alt={video.title}
+            style={{ width: "100%", display: "block", aspectRatio: "16/9", objectFit: "cover" }}
+          />
+          {/* Play button overlay */}
+          <div style={{
+            position: "absolute", top: "50%", left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 48, height: 48, borderRadius: "50%",
+            background: "rgba(0,0,0,0.7)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <div style={{
+              width: 0, height: 0,
+              borderTop: "9px solid transparent",
+              borderBottom: "9px solid transparent",
+              borderLeft: "16px solid #fff",
+              marginLeft: 3,
+            }} />
+          </div>
+          {/* Video label */}
+          <div style={{
+            position: "absolute", bottom: 0, left: 0, right: 0,
+            background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
+            padding: "16px 10px 8px",
+            display: "flex", alignItems: "center", gap: 6,
+          }}>
+            <span style={{ fontSize: 9, background: "#FF0000", color: "#fff", fontWeight: 700, padding: "2px 5px", borderRadius: 3, flexShrink: 0 }}>
+              ▶ YouTube
+            </span>
+            <span style={{ fontSize: 10, color: "#fff", lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+              {video.title}
+            </span>
+          </div>
+        </button>
+      )}
+    </div>
+  );
+}
+
 function ProductCard({ item, index }) {
   const tag = TAG_STYLES[item.tag] || { bg: "#eee", color: "#666" };
   const store = STORE_COLORS[item.store] || { bg: "#f5f5f5", color: "#666" };
@@ -87,45 +156,58 @@ function ProductCard({ item, index }) {
 
   return (
     <div style={{
-      display: "flex", alignItems: "flex-start", gap: 12,
-      padding: "14px 14px", background: "#fff",
+      background: "#fff",
       border: isTop3 ? "2px solid #e8593c" : "1.5px solid #ede9e4",
       borderRadius: 14,
+      overflow: "hidden",
       animation: "fadeUp 0.3s ease both",
       animationDelay: `${index * 40}ms`,
     }}>
-      <div style={{ minWidth: 28, display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 2, flexShrink: 0 }}>
-        <RankBadge rank={item.rank} />
-      </div>
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: 6, flexWrap: "wrap", marginBottom: 5 }}>
-          <span style={{ fontSize: "clamp(13px, 3.5vw, 15px)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, flex: 1, minWidth: 0 }}>
-            {item.name}
-          </span>
-          {item.tag && (
-            <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.4px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: tag.bg, color: tag.color, whiteSpace: "nowrap", flexShrink: 0 }}>
-              {item.tag}
-            </span>
-          )}
+      {/* Product info row */}
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px 0" }}>
+        <div style={{ minWidth: 28, display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 2, flexShrink: 0 }}>
+          <RankBadge rank={item.rank} />
         </div>
-        <p style={{ fontSize: 12, color: "#888", margin: "0 0 8px", lineHeight: 1.5 }}>{item.reason_pt}</p>
-        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: store.bg, color: store.color, textTransform: "uppercase", letterSpacing: "0.4px" }}>
-          {item.store}
-        </span>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "flex-start", gap: 6, flexWrap: "wrap", marginBottom: 5 }}>
+            <span style={{ fontSize: "clamp(13px, 3.5vw, 15px)", fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, flex: 1, minWidth: 0 }}>
+              {item.name}
+            </span>
+            {item.tag && (
+              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.4px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: tag.bg, color: tag.color, whiteSpace: "nowrap", flexShrink: 0 }}>
+                {item.tag}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: 12, color: "#888", margin: "0 0 8px", lineHeight: 1.5 }}>{item.reason_pt}</p>
+          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: store.bg, color: store.color, textTransform: "uppercase", letterSpacing: "0.4px" }}>
+            {item.store}
+          </span>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
+          <span style={{ fontSize: "clamp(14px, 4vw, 18px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>€{item.price_eur}</span>
+          <a href={url} target="_blank" rel="noopener noreferrer sponsored"
+            style={{
+              fontSize: 11, fontWeight: 700, padding: "6px 12px",
+              background: "#e8593c", color: "#fff", borderRadius: 7,
+              textDecoration: "none", whiteSpace: "nowrap",
+              minHeight: 32, display: "inline-flex", alignItems: "center",
+              WebkitTapHighlightColor: "transparent",
+            }}>
+            Ver →
+          </a>
+        </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-        <span style={{ fontSize: "clamp(14px, 4vw, 18px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>€{item.price_eur}</span>
-        <a href={url} target="_blank" rel="noopener noreferrer sponsored"
-          style={{
-            fontSize: 11, fontWeight: 700, padding: "6px 12px",
-            background: "#e8593c", color: "#fff", borderRadius: 7,
-            textDecoration: "none", whiteSpace: "nowrap",
-            minHeight: 32, display: "inline-flex", alignItems: "center",
-            WebkitTapHighlightColor: "transparent",
-          }}>
-          Ver →
-        </a>
-      </div>
+
+      {/* YouTube video embed */}
+      {item.youtube && (
+        <div style={{ padding: "0 14px 14px" }}>
+          <YouTubeEmbed video={item.youtube} />
+        </div>
+      )}
+
+      {/* Bottom padding when no video */}
+      {!item.youtube && <div style={{ height: 14 }} />}
     </div>
   );
 }
@@ -172,17 +254,20 @@ function FAQItem({ faq, index }) {
 
 function SkeletonCard() {
   return (
-    <div style={{ display: "flex", gap: 12, padding: "14px 14px", background: "#fff", border: "1.5px solid #ede9e4", borderRadius: 14 }}>
-      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f0ede8", flexShrink: 0 }} />
-      <div style={{ flex: 1 }}>
-        <div style={{ height: 14, width: "55%", background: "#f0ede8", borderRadius: 5, marginBottom: 8 }} />
-        <div style={{ height: 11, width: "90%", background: "#f5f2ee", borderRadius: 5, marginBottom: 5 }} />
-        <div style={{ height: 11, width: "60%", background: "#f5f2ee", borderRadius: 5 }} />
+    <div style={{ background: "#fff", border: "1.5px solid #ede9e4", borderRadius: 14, padding: "14px" }}>
+      <div style={{ display: "flex", gap: 12 }}>
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f0ede8", flexShrink: 0 }} />
+        <div style={{ flex: 1 }}>
+          <div style={{ height: 14, width: "55%", background: "#f0ede8", borderRadius: 5, marginBottom: 8 }} />
+          <div style={{ height: 11, width: "90%", background: "#f5f2ee", borderRadius: 5, marginBottom: 5 }} />
+          <div style={{ height: 11, width: "60%", background: "#f5f2ee", borderRadius: 5 }} />
+        </div>
+        <div style={{ width: 68, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
+          <div style={{ height: 18, width: 50, background: "#f0ede8", borderRadius: 5 }} />
+          <div style={{ height: 30, width: 68, background: "#f0ede8", borderRadius: 7 }} />
+        </div>
       </div>
-      <div style={{ width: 68, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
-        <div style={{ height: 18, width: 50, background: "#f0ede8", borderRadius: 5 }} />
-        <div style={{ height: 30, width: 68, background: "#f0ede8", borderRadius: 7 }} />
-      </div>
+      <div style={{ height: 160, background: "#f5f2ee", borderRadius: 10, marginTop: 10 }} />
     </div>
   );
 }
@@ -267,36 +352,12 @@ export default function CategoryPage({ slug }) {
         body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-
-        .tabs-scroll {
-          display: flex; gap: 8px;
-          overflow-x: auto; overflow-y: hidden;
-          -webkit-overflow-scrolling: touch;
-          scrollbar-width: none; padding: 2px 0;
-        }
+        .tabs-scroll { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 2px 0; }
         .tabs-scroll::-webkit-scrollbar { display: none; }
-
-        .cat-btn {
-          font-family: 'Plus Jakarta Sans', sans-serif;
-          font-size: 13px; font-weight: 600;
-          padding: 7px 16px; border-radius: 999px;
-          border: 1.5px solid #e0ddd8; background: #fff; color: #666;
-          cursor: pointer; white-space: nowrap;
-          transition: all 0.15s; text-decoration: none;
-          min-height: 36px; display: inline-flex; align-items: center;
-          WebkitTapHighlightColor: transparent;
-        }
-        .cat-btn:hover, .cat-btn:active { border-color: #e8593c; color: #e8593c; background: #fff8f6; }
+        .cat-btn { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 999px; border: 1.5px solid #e0ddd8; background: #fff; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center; -webkit-tap-highlight-color: transparent; }
+        .cat-btn:active { border-color: #e8593c; color: #e8593c; }
         .cat-btn.active { background: #e8593c; color: #fff; border-color: #e8593c; }
-
-        .ver-link {
-          font-size: 12px; fontWeight: 600;
-          padding: 7px 16px; border-radius: 999px;
-          border: 1.5px solid #e0ddd8; background: #fff; color: #555;
-          text-decoration: none; display: inline-flex; align-items: center;
-          min-height: 36px; transition: all 0.15s;
-          WebkitTapHighlightColor: transparent;
-        }
+        .ver-link { font-size: 12px; font-weight: 600; padding: 7px 16px; border-radius: 999px; border: 1.5px solid #e0ddd8; background: #fff; color: #555; text-decoration: none; display: inline-flex; align-items: center; min-height: 36px; -webkit-tap-highlight-color: transparent; }
         .ver-link:active { border-color: #e8593c; color: #e8593c; }
       `}</style>
 
@@ -311,7 +372,6 @@ export default function CategoryPage({ slug }) {
               <span style={{ fontSize: 20, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
               <span style={{ fontSize: 20, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
             </a>
-
             <div style={{ flex: 1, overflow: "hidden" }}>
               <div className="tabs-scroll">
                 {categories.map(cat => (
@@ -321,7 +381,6 @@ export default function CategoryPage({ slug }) {
                 ))}
               </div>
             </div>
-
             <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 999, padding: "4px 10px" }}>
               <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e", display: "inline-block", animation: "pulse 2s infinite" }} />
               <span style={{ fontSize: 10, color: "#15803d", fontWeight: 700 }}>Ao vivo</span>
@@ -346,16 +405,14 @@ export default function CategoryPage({ slug }) {
             <div style={{ marginTop: 10, fontSize: 11, color: "#bbb", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <span>{todayFormatted}</span>
               <span>·</span>
-              <span style={{ background: "#f5f2ee", padding: "2px 8px", borderRadius: 999, fontSize: 10, color: "#999", fontWeight: 600 }}>
-                Selecionado por IA
-              </span>
+              <span style={{ background: "#f5f2ee", padding: "2px 8px", borderRadius: 999, fontSize: 10, color: "#999", fontWeight: 600 }}>Selecionado por IA</span>
             </div>
           </div>
 
           {/* Product list */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 40 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 40 }}>
             {loading ? (
-              Array.from({ length: 10 }).map((_, i) => <SkeletonCard key={i} />)
+              Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
             ) : !list ? (
               <div style={{ padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#bbb", border: "1.5px solid #ede9e4" }}>
                 <p style={{ fontSize: 14 }}>Nenhuma lista disponível para esta categoria.</p>
@@ -394,13 +451,9 @@ export default function CategoryPage({ slug }) {
                 Ver também
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-                {categories
-                  .filter(c => c.slug !== slug)
-                  .map(cat => (
-                    <a key={cat.slug} href={`/${cat.slug}`} className="ver-link">
-                      {cat.category_pt}
-                    </a>
-                  ))}
+                {categories.filter(c => c.slug !== slug).map(cat => (
+                  <a key={cat.slug} href={`/${cat.slug}`} className="ver-link">{cat.category_pt}</a>
+                ))}
               </div>
             </div>
           )}
