@@ -8,13 +8,13 @@ const supabase = createClient(
 );
 
 const CATEGORIES = [
-  { en: "wireless-headphones",  pt: "Auscultadores wireless" },
-  { en: "robot-vacuums",        pt: "Robots aspiradores" },
-  { en: "running-shoes",        pt: "Sapatilhas de corrida" },
-  { en: "air-fryers",           pt: "Fritadeiras de ar" },
-  { en: "laptops",              pt: "Portáteis até 800€" },
-  { en: "sunscreen",            pt: "Protetor solar" },
-  { en: "summer-dresses",       pt: "Vestidos de verão" },
+  { en: "wireless-headphones", pt: "Auscultadores",      slug: "auscultadores" },
+  { en: "robot-vacuums",       pt: "Robots aspiradores", slug: "robots-aspiradores" },
+  { en: "running-shoes",       pt: "Sapatilhas",         slug: "sapatilhas" },
+  { en: "air-fryers",          pt: "Fritadeiras de ar",  slug: "fritadeiras-de-ar" },
+  { en: "laptops",             pt: "Portáteis",          slug: "portateis" },
+  { en: "sunscreen",           pt: "Protetor solar",     slug: "protetor-solar" },
+  { en: "summer-dresses",      pt: "Moda verão",         slug: "moda-verao" },
 ];
 
 const SYSTEM_PROMPT = `You are a product recommendation engine for aitop10.pt, a Portuguese consumer website.
