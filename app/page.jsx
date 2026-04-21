@@ -88,39 +88,21 @@ export default function HomePage() {
         .fade-2 { animation: fadeUp 0.5s ease both 0.15s; opacity: 0; }
         .fade-3 { animation: fadeUp 0.5s ease both 0.25s; opacity: 0; }
         .fade-4 { animation: fadeUp 0.5s ease both 0.35s; opacity: 0; }
-
         .tabs-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .tabs-scroll::-webkit-scrollbar { display: none; }
-
         .tab-pill { font-size: 13px; font-weight: 600; padding: 7px 18px; border-radius: 999px; border: 1.5px solid #e0ddd8; background: #fff; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; display: inline-block; }
         .tab-pill:hover { border-color: #e8593c; color: #e8593c; background: #fff8f6; }
-
         .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
         .cat-card { background: #fff; border: 1.5px solid #ede9e4; border-radius: 20px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; text-decoration: none; display: block; }
         .cat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); border-color: #e8593c; }
-
         .product-row { display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid #f0ede8; transition: background 0.12s; }
         .product-row:last-child { border-bottom: none; }
         .product-row:hover { background: #faf9f7; }
-
-        .ticker-wrap { overflow: hidden; background: #1a1a1a; padding: 9px 0; }
-        .ticker-inner { display: flex; width: max-content; animation: ticker 35s linear infinite; }
-        .ticker-item { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); padding: 0 28px; white-space: nowrap; letter-spacing: 1px; text-transform: uppercase; }
-        .ticker-dot { color: #e8593c; }
-
         .how-step { background: #fff; border: 1.5px solid #ede9e4; border-radius: 16px; padding: 24px; }
         .how-icon { width: 44px; height: 44px; border-radius: 12px; background: #fff8f6; border: 1.5px solid #fdd0c4; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 14px; }
-
         .stat-card { background: #fff; border: 1.5px solid #ede9e4; border-radius: 16px; padding: 20px 24px; flex: 1; min-width: 120px; }
-
-        @media (max-width: 680px) {
-          .cat-grid { grid-template-columns: 1fr; }
-          .how-grid { grid-template-columns: 1fr 1fr !important; }
-          .hero-cols { flex-direction: column !important; }
-        }
-        @media (max-width: 400px) {
-          .how-grid { grid-template-columns: 1fr !important; }
-        }
+        @media (max-width: 680px) { .cat-grid { grid-template-columns: 1fr; } .how-grid { grid-template-columns: 1fr 1fr !important; } .hero-cols { flex-direction: column !important; } }
+        @media (max-width: 400px) { .how-grid { grid-template-columns: 1fr !important; } }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
@@ -128,16 +110,13 @@ export default function HomePage() {
         {/* Header */}
         <header style={{ background: "#fff", borderBottom: "1.5px solid #ede9e4", padding: "0 24px", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", height: 64, gap: 24 }}>
-
-            {/* Logo */}
             <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline", gap: 0, flexShrink: 0 }}>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>ai</span>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#e8593c", letterSpacing: "-0.5px" }}>10</span>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
-              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>ai</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#e8593c", letterSpacing: "-0.5px" }}>10</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
+              <span style={{ fontSize: 22, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
             </a>
 
-            {/* Scrollable tabs */}
             <div style={{ flex: 1, overflow: "hidden" }}>
               <div className="tabs-scroll">
                 {allLists.map(list => (
@@ -148,7 +127,6 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Live badge */}
             <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 999, padding: "5px 12px" }}>
               <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
               <span style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>Ao vivo</span>
@@ -156,13 +134,22 @@ export default function HomePage() {
           </div>
         </header>
 
-        {/* Ticker */}
-        <div className="ticker-wrap">
-          <div className="ticker-inner">
+        {/* Ticker — orange background, white text, clickable */}
+        <div style={{ overflow: "hidden", background: "#e8593c", padding: "9px 0" }}>
+          <div style={{ display: "flex", width: "max-content", animation: "ticker 35s linear infinite" }}>
             {[...allLists, ...allLists].map((list, i) => (
-              <span key={i} className="ticker-item">
-                <span className="ticker-dot">▸</span> TOP 10 {list.category_pt?.toUpperCase()} &nbsp;
-              </span>
+              <a
+                key={i}
+                href={`/${list.slug || list.category}`}
+                style={{
+                  fontSize: 11, fontWeight: 700, color: "#fff",
+                  padding: "0 28px", whiteSpace: "nowrap",
+                  letterSpacing: "1px", textTransform: "uppercase",
+                  textDecoration: "none",
+                }}
+              >
+                ▸ TOP 10 {list.category_pt?.toUpperCase()} &nbsp;·
+              </a>
             ))}
           </div>
         </div>
@@ -188,7 +175,6 @@ export default function HomePage() {
                 </p>
               </div>
 
-              {/* Stats */}
               <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
                 <div className="stat-card">
                   <div style={{ fontSize: 30, fontWeight: 800, color: "#e8593c", letterSpacing: "-1px", lineHeight: 1 }}>{allLists.length}</div>
@@ -287,7 +273,7 @@ export default function HomePage() {
               ].map((step, i) => (
                 <div key={i} className="how-step">
                   <div className="how-icon">{step.icon}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", marginBottom: 8, lineHeight: 1.3 }}>{step.title}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", marginBottom: 8, lineHeight: 1.4 }}>{step.title}</div>
                   <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6 }}>{step.desc}</div>
                 </div>
               ))}
@@ -354,7 +340,7 @@ export default function HomePage() {
           </div>
 
           {/* Newsletter */}
-          <div style={{ marginTop: 64, background: "#1a1a1a", borderRadius: 24, padding: "40px 40px", textAlign: "center" }}>
+          <div style={{ marginTop: 64, background: "#1a1a1a", borderRadius: 24, padding: "40px", textAlign: "center" }}>
             <h2 style={{ fontSize: 26, fontWeight: 800, color: "#fff", marginBottom: 8, letterSpacing: "-0.5px" }}>
               Recebe o Top 10 todos os dias
             </h2>
@@ -372,12 +358,12 @@ export default function HomePage() {
 
           {/* Footer */}
           <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1.5px solid #ede9e4", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <a href="/" style={{ textDecoration: "none', display: 'flex", alignItems: "baseline", gap: 0 }}>
+            <div style={{ display: "flex", alignItems: "baseline", gap: 0 }}>
               <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a" }}>ai</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: "#e8593c" }}>10</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a" }}>pt</span>
               <span style={{ fontSize: 16, fontWeight: 800, color: "#ccc" }}>.top</span>
-            </a>
+            </div>
             <p style={{ fontSize: 11, color: "#bbb", maxWidth: 500, textAlign: "right", lineHeight: 1.6 }}>
               Os links são links de afiliado. Ao comprar através deles apoias o ai10pt.top sem custo adicional. Listas geradas por IA — verifique sempre os preços nas lojas.
             </p>
