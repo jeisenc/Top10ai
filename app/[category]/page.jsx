@@ -11,16 +11,22 @@ export async function generateStaticParams() {
 
   const { data } = await supabase
     .from("daily_lists")
-    .select("category")
+    .select("slug, category")
+    .not("slug", "is", null)
     .order("created_at", { ascending: false });
 
   if (!data) return [];
 
-  // Get unique categories and convert to slugs
-  const unique = [...new Set(data.map(row => row.category))];
-  return unique.map(cat => ({ category: cat.replace(/-/g, "-") }));
+  const seen = new Set();
+  return data
+    .filter(row => {
+      if (seen.has(row.slug)) return false;
+      seen.add(row.slug);
+      return true;
+    })
+    .map(row => ({ category: row.slug }));
 }
 
 export default function Page({ params }) {
-  return <CategoryPage categoryEn={params.category} />;
+  return <CategoryPage slug={params.category} />;
 }
