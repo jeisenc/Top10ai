@@ -1,16 +1,23 @@
+import { Plus_Jakarta_Sans } from "next/font/google";
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  variable: "--font-jakarta",
+});
+
 export const metadata = {
   title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
   description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
   icons: {
-    icon: [
-      { url: "/favicon.svg", type: "image/svg+xml" },
-    ],
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt">
+    <html lang="pt" className={jakarta.variable}>
       <head>
         <meta name="google-site-verification" content="6QnVFuih8z416buOe7OoE8ux9fM78ilKEa2hhZzK2yc" />
         <script
