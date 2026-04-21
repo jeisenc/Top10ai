@@ -38,31 +38,31 @@ const STORE_COLORS = {
 };
 
 const SEO = {
-  "wireless-headphones": {
+  "auscultadores": {
     title: "Top 10 Melhores Auscultadores Wireless Portugal 2026",
     description: "Descobre os 10 melhores auscultadores wireless disponíveis em Portugal em 2026. Lista atualizada diariamente por IA com preços e onde comprar.",
   },
-  "robot-vacuums": {
+  "robots-aspiradores": {
     title: "Top 10 Melhores Robots Aspiradores Portugal 2026",
     description: "Os 10 melhores robots aspiradores disponíveis em Portugal em 2026. Comparação de preços na Worten, Fnac e Amazon. Atualizado diariamente por IA.",
   },
-  "running-shoes": {
+  "sapatilhas": {
     title: "Top 10 Melhores Sapatilhas de Corrida Portugal 2026",
     description: "As 10 melhores sapatilhas de corrida disponíveis em Portugal em 2026. Lista atualizada diariamente por inteligência artificial.",
   },
-  "air-fryers": {
+  "fritadeiras-de-ar": {
     title: "Top 10 Melhores Fritadeiras de Ar Portugal 2026",
     description: "As 10 melhores fritadeiras de ar disponíveis em Portugal em 2026. Preços e lojas atualizados diariamente por IA.",
   },
-  "laptops": {
+  "portateis": {
     title: "Top 10 Melhores Portáteis até 800€ Portugal 2026",
     description: "Os 10 melhores portáteis disponíveis em Portugal em 2026. Lista atualizada diariamente com preços reais na Worten, Fnac e Amazon.",
   },
-  "sunscreen": {
+  "protetor-solar": {
     title: "Top 10 Melhores Protetores Solares Portugal 2026",
     description: "Os 10 melhores protetores solares disponíveis em Portugal em 2026. Lista atualizada diariamente por inteligência artificial.",
   },
-  "summer-dresses": {
+  "moda-verao": {
     title: "Top 10 Melhores Vestidos de Verão Portugal 2026",
     description: "Os 10 vestidos de verão mais populares disponíveis em Portugal em 2026. Lista atualizada diariamente por IA com preços e onde comprar.",
   },
@@ -141,12 +141,12 @@ function SkeletonCard() {
   );
 }
 
-export default function CategoryPage({ categoryEn }) {
+export default function CategoryPage({ slug }) {
   const [list, setList] = useState(null);
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
 
-  const seo = SEO[categoryEn] || {
+  const seo = SEO[slug] || {
     title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
     description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
   };
@@ -160,14 +160,15 @@ export default function CategoryPage({ categoryEn }) {
     async function fetchCategories() {
       const { data } = await supabase
         .from("daily_lists")
-        .select("category, category_pt")
+        .select("category, category_pt, slug")
+        .not("slug", "is", null)
         .order("created_at", { ascending: false });
 
       if (data) {
         const seen = new Set();
         const unique = data.filter(row => {
-          if (seen.has(row.category)) return false;
-          seen.add(row.category);
+          if (seen.has(row.slug)) return false;
+          seen.add(row.slug);
           return true;
         });
         setCategories(unique);
@@ -176,14 +177,14 @@ export default function CategoryPage({ categoryEn }) {
     fetchCategories();
   }, []);
 
-  // Fetch the list for this category
+  // Fetch the list for this slug
   useEffect(() => {
     async function fetchList() {
       setLoading(true);
       const { data, error } = await supabase
         .from("daily_lists")
         .select("*")
-        .eq("category", categoryEn)
+        .eq("slug", slug)
         .order("created_at", { ascending: false })
         .limit(1)
         .single();
@@ -192,7 +193,7 @@ export default function CategoryPage({ categoryEn }) {
       setLoading(false);
     }
     fetchList();
-  }, [categoryEn]);
+  }, [slug]);
 
   return (
     <>
@@ -233,9 +234,9 @@ export default function CategoryPage({ categoryEn }) {
           <div style={{ maxWidth: 780, margin: "0 auto", padding: "12px 24px", display: "flex", gap: 8, overflowX: "auto", scrollbarWidth: "none" }}>
             {categories.map(cat => (
               <a
-                key={cat.category}
-                href={`/${cat.category}`}
-                className={`cat-btn${cat.category === categoryEn ? " active" : ""}`}
+                key={cat.slug}
+                href={`/${cat.slug}`}
+                className={`cat-btn${cat.slug === slug ? " active" : ""}`}
               >
                 {cat.category_pt}
               </a>
@@ -250,7 +251,7 @@ export default function CategoryPage({ categoryEn }) {
               Top 10 do dia
             </div>
             <h1 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "clamp(26px, 5vw, 36px)", fontWeight: 800, lineHeight: 1.15, color: "#0f0f0f", marginBottom: 10, letterSpacing: "-0.5px" }}>
-              {loading ? "A carregar..." : list?.category_pt || categoryEn}
+              {loading ? "A carregar..." : list?.category_pt || slug}
             </h1>
             {!loading && list?.headline && (
               <p style={{ fontSize: 15, color: "#555", lineHeight: 1.6, maxWidth: 580 }}>{list.headline}</p>
@@ -284,9 +285,9 @@ export default function CategoryPage({ categoryEn }) {
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
                 {categories
-                  .filter(c => c.category !== categoryEn)
+                  .filter(c => c.slug !== slug)
                   .map(cat => (
-                    <a key={cat.category} href={`/${cat.category}`} style={{
+                    <a key={cat.slug} href={`/${cat.slug}`} style={{
                       fontSize: 13, padding: "7px 16px", borderRadius: 999,
                       border: "1px solid #ddd", color: "#555",
                       textDecoration: "none", background: "#fff",
