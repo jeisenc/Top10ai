@@ -38,6 +38,7 @@ Generate a Top 10 product list. Return this exact JSON structure:
 {
   "category": "${category.en}",
   "category_pt": "${category.pt}",
+  "slug": "${category.slug}",
   "date": "${date}",
   "headline": "one punchy sentence in Portuguese summarising the list",
   "items": [
@@ -59,9 +60,8 @@ Return only the JSON. Nothing else.`
   });
 
   let raw = msg.content[0].text.trim();
-// Strip markdown code fences if Claude added them
-raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-return JSON.parse(raw);
+  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+  return JSON.parse(raw);
 }
 
 async function main() {
@@ -72,6 +72,8 @@ async function main() {
   console.log(`Generating Top 10 for: ${category.pt} — ${today}`);
 
   const list = await generateList(category, today);
+  list.slug = category.slug;
+
   console.log("Generated successfully. Saving to Supabase...");
 
   const { error } = await supabase.from("daily_lists").insert(list);
@@ -81,11 +83,6 @@ async function main() {
   }
 
   console.log("Done! List saved to database.");
-
-// Tell Vercel to refresh all pages
-const revalidateUrl = `https://ai10pt.top/api/revalidate?secret=${process.env.REVALIDATE_SECRET}`;
-await fetch(revalidateUrl, { method: "POST" });
-console.log("Vercel cache cleared.");
 }
 
 main().catch((err) => {
