@@ -30,7 +30,7 @@ const TAG_STYLES = {
 
 const STORE_COLORS = {
   Worten:    { bg: "#fff0e6", color: "#b34700" },
-  Fnac:      { bg: "#fff0e0", color: "#9a6000" },
+  Fnac:      { bg: "#fff8e0", color: "#8a6000" },
   Amazon:    { bg: "#fff8e0", color: "#8a6000" },
   Decathlon: { bg: "#e8f4ff", color: "#004899" },
   Zalando:   { bg: "#fff0f3", color: "#9b1b30" },
@@ -40,7 +40,7 @@ function RankBadge({ rank }) {
   if (rank === 1) return <span style={{ fontSize: 20, lineHeight: 1 }}>🥇</span>;
   if (rank === 2) return <span style={{ fontSize: 20, lineHeight: 1 }}>🥈</span>;
   if (rank === 3) return <span style={{ fontSize: 20, lineHeight: 1 }}>🥉</span>;
-  return <span style={{ fontSize: 14, fontWeight: 700, color: "#aaa", minWidth: 24, textAlign: "center", display: "inline-block" }}>{rank}</span>;
+  return <span style={{ fontSize: 13, fontWeight: 700, color: "#bbb", minWidth: 24, textAlign: "center", display: "inline-block" }}>{rank}</span>;
 }
 
 export default function HomePage() {
@@ -55,8 +55,6 @@ export default function HomePage() {
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-
-      // Fetch all lists, get most recent per slug
       const { data } = await supabase
         .from("daily_lists")
         .select("*")
@@ -65,8 +63,9 @@ export default function HomePage() {
       if (data) {
         const seen = new Set();
         const unique = data.filter(row => {
-          if (seen.has(row.slug || row.category)) return false;
-          seen.add(row.slug || row.category);
+          const key = row.slug || row.category;
+          if (seen.has(key)) return false;
+          seen.add(key);
           return true;
         });
         setFeaturedList(unique[0] || null);
@@ -80,159 +79,161 @@ export default function HomePage() {
   return (
     <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'DM Sans', sans-serif; background: #0a0a0a; color: #f0ede8; -webkit-font-smoothing: antialiased; }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .fade-1 { animation: fadeUp 0.4s ease both 0.1s; }
-        .fade-2 { animation: fadeUp 0.4s ease both 0.2s; }
-        .fade-3 { animation: fadeUp 0.4s ease both 0.3s; }
-        .fade-4 { animation: fadeUp 0.4s ease both 0.4s; }
+        .fade-1 { animation: fadeUp 0.5s ease both 0.05s; opacity: 0; }
+        .fade-2 { animation: fadeUp 0.5s ease both 0.15s; opacity: 0; }
+        .fade-3 { animation: fadeUp 0.5s ease both 0.25s; opacity: 0; }
+        .fade-4 { animation: fadeUp 0.5s ease both 0.35s; opacity: 0; }
 
-        /* Scrollable tabs */
-        .tabs-scroll { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -ms-overflow-style: none; }
+        .tabs-scroll { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
         .tabs-scroll::-webkit-scrollbar { display: none; }
-        .tab-btn { font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; padding: 6px 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.6); cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; display: inline-block; letter-spacing: 0.3px; }
-        .tab-btn:hover { border-color: #e8593c; color: #e8593c; }
 
-        /* Category cards */
-        .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
-        .cat-card { background: #141414; border: 1px solid #222; border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; text-decoration: none; display: block; }
-        .cat-card:hover { transform: translateY(-3px); border-color: #e8593c; }
+        .tab-pill { font-size: 13px; font-weight: 600; padding: 7px 18px; border-radius: 999px; border: 1.5px solid #e0ddd8; background: #fff; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; display: inline-block; }
+        .tab-pill:hover { border-color: #e8593c; color: #e8593c; background: #fff8f6; }
 
-        /* Featured product rows */
-        .product-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #1a1a1a; transition: background 0.15s; }
+        .cat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .cat-card { background: #fff; border: 1.5px solid #ede9e4; border-radius: 20px; overflow: hidden; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s; text-decoration: none; display: block; }
+        .cat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); border-color: #e8593c; }
+
+        .product-row { display: flex; align-items: center; gap: 14px; padding: 13px 20px; border-bottom: 1px solid #f0ede8; transition: background 0.12s; }
         .product-row:last-child { border-bottom: none; }
-        .product-row:hover { background: #1a1a1a; }
+        .product-row:hover { background: #faf9f7; }
 
-        /* Ticker */
-        .ticker-wrap { overflow: hidden; background: #e8593c; padding: 8px 0; }
-        .ticker-inner { display: flex; width: max-content; animation: ticker 30s linear infinite; }
-        .ticker-item { font-size: 12px; font-weight: 600; color: #fff; padding: 0 32px; white-space: nowrap; letter-spacing: 0.5px; }
+        .ticker-wrap { overflow: hidden; background: #1a1a1a; padding: 9px 0; }
+        .ticker-inner { display: flex; width: max-content; animation: ticker 35s linear infinite; }
+        .ticker-item { font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.7); padding: 0 28px; white-space: nowrap; letter-spacing: 1px; text-transform: uppercase; }
+        .ticker-dot { color: #e8593c; }
 
-        /* Stats bar */
-        .stat-box { background: #141414; border: 1px solid #222; border-radius: 12px; padding: 16px 20px; flex: 1; min-width: 120px; }
+        .how-step { background: #fff; border: 1.5px solid #ede9e4; border-radius: 16px; padding: 24px; }
+        .how-icon { width: 44px; height: 44px; border-radius: 12px; background: #fff8f6; border: 1.5px solid #fdd0c4; display: flex; align-items: center; justify-content: center; font-size: 20px; margin-bottom: 14px; }
 
-        @media (max-width: 640px) {
+        .stat-card { background: #fff; border: 1.5px solid #ede9e4; border-radius: 16px; padding: 20px 24px; flex: 1; min-width: 120px; }
+
+        @media (max-width: 680px) {
           .cat-grid { grid-template-columns: 1fr; }
-          .hero-grid { grid-template-columns: 1fr !important; }
+          .how-grid { grid-template-columns: 1fr 1fr !important; }
+          .hero-cols { flex-direction: column !important; }
+        }
+        @media (max-width: 400px) {
+          .how-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
-      <div style={{ minHeight: "100vh", background: "#0a0a0a" }}>
+      <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
 
         {/* Header */}
-        <header style={{ background: "#0a0a0a", borderBottom: "1px solid #1a1a1a", padding: "0 24px", position: "sticky", top: 0, zIndex: 100 }}>
-          <div style={{ maxWidth: 1100, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 60 }}>
-            <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline", gap: 1 }}>
-              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "#f0ede8", letterSpacing: "-1px" }}>ai</span>
-              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "#e8593c", letterSpacing: "-1px" }}>10</span>
-              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "#f0ede8", letterSpacing: "-1px" }}>pt</span>
-              <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 24, fontWeight: 800, color: "rgba(255,255,255,0.3)", letterSpacing: "-1px" }}>.top</span>
+        <header style={{ background: "#fff", borderBottom: "1.5px solid #ede9e4", padding: "0 24px", position: "sticky", top: 0, zIndex: 100 }}>
+          <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", height: 64, gap: 24 }}>
+
+            {/* Logo */}
+            <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline", gap: 0, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>ai</span>
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#e8593c", letterSpacing: "-0.5px" }}>10</span>
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
+              <span style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 22, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
             </a>
 
-            {/* Scrollable category tabs in header */}
-            <div style={{ flex: 1, margin: "0 32px", overflow: "hidden" }}>
+            {/* Scrollable tabs */}
+            <div style={{ flex: 1, overflow: "hidden" }}>
               <div className="tabs-scroll">
                 {allLists.map(list => (
-                  <a
-                    key={list.slug || list.category}
-                    href={`/${list.slug || list.category}`}
-                    className="tab-btn"
-                  >
+                  <a key={list.slug || list.category} href={`/${list.slug || list.category}`} className="tab-pill">
                     {list.category_pt}
                   </a>
                 ))}
               </div>
             </div>
 
-            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
-              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", display: "inline-block", animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", whiteSpace: "nowrap" }}>Ao vivo</span>
+            {/* Live badge */}
+            <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 999, padding: "5px 12px" }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block" }} />
+              <span style={{ fontSize: 11, color: "#15803d", fontWeight: 600 }}>Ao vivo</span>
             </div>
           </div>
         </header>
 
-        {/* Trending ticker */}
+        {/* Ticker */}
         <div className="ticker-wrap">
           <div className="ticker-inner">
-            {allLists.concat(allLists).map((list, i) => (
+            {[...allLists, ...allLists].map((list, i) => (
               <span key={i} className="ticker-item">
-                🔥 TOP 10 {list.category_pt?.toUpperCase()} &nbsp;·&nbsp;
+                <span className="ticker-dot">▸</span> TOP 10 {list.category_pt?.toUpperCase()} &nbsp;
               </span>
             ))}
           </div>
         </div>
 
-        <div style={{ maxWidth: 1100, margin: "0 auto", padding: "40px 24px" }}>
+        <div style={{ maxWidth: 1140, margin: "0 auto", padding: "48px 24px" }}>
 
-          {/* Hero section */}
-          <div className="fade-1" style={{ marginBottom: 16 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
-              <span style={{ background: "#e8593c", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 4, letterSpacing: "1px", textTransform: "uppercase" }}>
-                Trending agora
-              </span>
-              <span style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>{todayFormatted}</span>
+          {/* Hero */}
+          <div className="fade-1" style={{ marginBottom: 48 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff8f6", border: "1.5px solid #fdd0c4", borderRadius: 999, padding: "5px 14px", marginBottom: 20 }}>
+              <span style={{ fontSize: 14 }}>🔥</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#e8593c", letterSpacing: "0.3px" }}>Atualizado diariamente por IA</span>
             </div>
-            <h1 style={{ fontFamily: "'Syne', sans-serif", fontSize: "clamp(32px, 5vw, 56px)", fontWeight: 800, lineHeight: 1.05, letterSpacing: "-1.5px", color: "#f0ede8", marginBottom: 12 }}>
-              Os melhores produtos<br />
-              <span style={{ color: "#e8593c" }}>selecionados por IA</span>
-            </h1>
-            <p style={{ fontSize: 16, color: "rgba(255,255,255,0.5)", maxWidth: 560, lineHeight: 1.7 }}>
-              Todos os dias, a nossa inteligência artificial analisa o que os portugueses mais procuram e cria automaticamente o Top 10 mais relevante do momento — com preços reais e links diretos para as melhores lojas.
-            </p>
+
+            <div className="hero-cols" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 24, flexWrap: "wrap" }}>
+              <div style={{ maxWidth: 600 }}>
+                <h1 style={{ fontSize: "clamp(34px, 5vw, 58px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1.5px", color: "#1a1a1a", marginBottom: 16 }}>
+                  Os melhores produtos<br />
+                  <span style={{ color: "#e8593c" }}>escolhidos por IA</span><br />
+                  para Portugal
+                </h1>
+                <p style={{ fontSize: 17, color: "#666", lineHeight: 1.7, maxWidth: 520 }}>
+                  Todos os dias analisamos tendências de pesquisa em Portugal e geramos automaticamente o Top 10 mais relevante — com preços reais e links diretos.
+                </p>
+              </div>
+
+              {/* Stats */}
+              <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                <div className="stat-card">
+                  <div style={{ fontSize: 30, fontWeight: 800, color: "#e8593c", letterSpacing: "-1px", lineHeight: 1 }}>{allLists.length}</div>
+                  <div style={{ fontSize: 12, color: "#999", marginTop: 4, fontWeight: 500 }}>Categorias</div>
+                </div>
+                <div className="stat-card">
+                  <div style={{ fontSize: 30, fontWeight: 800, color: "#e8593c", letterSpacing: "-1px", lineHeight: 1 }}>10</div>
+                  <div style={{ fontSize: 12, color: "#999", marginTop: 4, fontWeight: 500 }}>Produtos / lista</div>
+                </div>
+                <div className="stat-card">
+                  <div style={{ fontSize: 30, fontWeight: 800, color: "#e8593c", letterSpacing: "-1px", lineHeight: 1 }}>24h</div>
+                  <div style={{ fontSize: 12, color: "#999", marginTop: 4, fontWeight: 500 }}>Atualização</div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Stats bar */}
-          <div className="fade-2" style={{ display: "flex", gap: 12, marginBottom: 48, flexWrap: "wrap" }}>
-            <div className="stat-box">
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#e8593c", fontFamily: "'Syne', sans-serif" }}>{allLists.length}</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Categorias ativas</div>
-            </div>
-            <div className="stat-box">
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#e8593c", fontFamily: "'Syne', sans-serif" }}>10</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Produtos por lista</div>
-            </div>
-            <div className="stat-box">
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#e8593c", fontFamily: "'Syne', sans-serif" }}>24h</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Atualização automática</div>
-            </div>
-            <div className="stat-box">
-              <div style={{ fontSize: 24, fontWeight: 700, color: "#22c55e", fontFamily: "'Syne', sans-serif" }}>100%</div>
-              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 2 }}>Gratuito</div>
-            </div>
-          </div>
-
-          {/* Featured banner — most recent list */}
+          {/* Featured banner */}
           {!loading && featuredList && (
-            <div className="fade-3" style={{ marginBottom: 48 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                  <span style={{ background: "#e8593c", color: "#fff", fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 4, letterSpacing: "1px" }}>
-                    EM DESTAQUE
+            <div className="fade-2" style={{ marginBottom: 56 }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ background: "#e8593c", color: "#fff", fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 6, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                    Em destaque hoje
                   </span>
-                  <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, color: "#f0ede8" }}>
+                  <h2 style={{ fontSize: 20, fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
                     {featuredList.category_pt}
                   </h2>
                 </div>
                 <a href={`/${featuredList.slug || featuredList.category}`}
-                  style={{ fontSize: 12, color: "#e8593c", textDecoration: "none", fontWeight: 600, whiteSpace: "nowrap" }}>
+                  style={{ fontSize: 13, color: "#e8593c", textDecoration: "none", fontWeight: 700 }}>
                   Ver lista completa →
                 </a>
               </div>
 
               {featuredList.headline && (
-                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.5)", marginBottom: 16, fontStyle: "italic" }}>
+                <p style={{ fontSize: 14, color: "#888", marginBottom: 16, fontStyle: "italic", paddingLeft: 4 }}>
                   "{featuredList.headline}"
                 </p>
               )}
 
-              <div style={{ background: "#141414", border: "1px solid #222", borderRadius: 16, overflow: "hidden" }}>
+              <div style={{ background: "#fff", border: "1.5px solid #ede9e4", borderRadius: 20, overflow: "hidden" }}>
                 {featuredList.items?.slice(0, 5).map((item, i) => {
-                  const tag = TAG_STYLES[item.tag] || { bg: "#333", color: "#fff" };
-                  const store = STORE_COLORS[item.store] || { bg: "#222", color: "#aaa" };
+                  const tag = TAG_STYLES[item.tag] || { bg: "#eee", color: "#666" };
+                  const store = STORE_COLORS[item.store] || { bg: "#f5f5f5", color: "#666" };
                   const url = buildAffiliateUrl(item.store, item.store_url_hint);
                   return (
                     <div key={i} className="product-row">
@@ -240,18 +241,18 @@ export default function HomePage() {
                         <RankBadge rank={item.rank} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                          <span style={{ fontSize: 14, fontWeight: 600, color: "#f0ede8" }}>{item.name}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 2 }}>
+                          <span style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{item.name}</span>
                           {item.tag && (
-                            <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 3, background: tag.bg, color: tag.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                            <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: tag.bg, color: tag.color, textTransform: "uppercase", letterSpacing: "0.5px" }}>
                               {item.tag}
                             </span>
                           )}
                         </div>
-                        <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginTop: 2, lineHeight: 1.4 }}>{item.reason_pt}</p>
+                        <p style={{ fontSize: 12, color: "#999", lineHeight: 1.4 }}>{item.reason_pt}</p>
                       </div>
                       <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
-                        <span style={{ fontSize: 16, fontWeight: 700, color: "#f0ede8" }}>€{item.price_eur}</span>
+                        <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>€{item.price_eur}</span>
                         <a href={url} target="_blank" rel="noopener noreferrer sponsored"
                           style={{ fontSize: 11, fontWeight: 700, padding: "5px 12px", background: "#e8593c", color: "#fff", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap" }}>
                           Ver →
@@ -260,111 +261,89 @@ export default function HomePage() {
                     </div>
                   );
                 })}
-                <div style={{ padding: "12px 16px", borderTop: "1px solid #1a1a1a", textAlign: "center" }}>
+                <div style={{ padding: "14px 20px", background: "#faf9f7", borderTop: "1px solid #f0ede8", textAlign: "center" }}>
                   <a href={`/${featuredList.slug || featuredList.category}`}
-                    style={{ fontSize: 13, color: "#e8593c", textDecoration: "none", fontWeight: 600 }}>
-                    Ver os 10 produtos completos →
+                    style={{ fontSize: 13, color: "#e8593c", textDecoration: "none", fontWeight: 700 }}>
+                    Ver todos os 10 produtos →
                   </a>
                 </div>
               </div>
             </div>
           )}
 
-          {/* How it works story */}
-          <div className="fade-3" style={{ marginBottom: 48, background: "#141414", border: "1px solid #222", borderRadius: 16, padding: "28px 32px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-              <span style={{ fontSize: 20 }}>🤖</span>
-              <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, color: "#f0ede8" }}>
-                Como funciona o ai10pt.top?
-              </h2>
+          {/* How it works */}
+          <div className="fade-3" style={{ marginBottom: 56 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Como funciona?</h2>
+              <div style={{ flex: 1, height: 1, background: "#ede9e4" }} />
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 24 }}>
-              <div>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>📈</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#f0ede8", marginBottom: 4 }}>1. Análise de tendências</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-                  Todos os dias às 06:00, o nosso sistema analisa automaticamente o que os portugueses mais pesquisam no Google e em motores de IA.
+
+            <div className="how-grid" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+              {[
+                { icon: "📈", title: "Análise de tendências", desc: "Às 06:00, o sistema analisa automaticamente o que os portugueses mais pesquisam no Google e em motores de IA." },
+                { icon: "🧠", title: "IA decide a categoria", desc: "A inteligência artificial cruza tendências, época do ano e eventos atuais para escolher a categoria mais relevante." },
+                { icon: "🛒", title: "Top 10 gerado", desc: "São selecionados os 10 melhores produtos disponíveis em Portugal com preços reais na Worten, Fnac, Amazon e mais." },
+                { icon: "⚡", title: "Publicado automaticamente", desc: "A lista aparece sem intervenção humana. Cada dia uma nova categoria, sempre relevante, sempre atual." },
+              ].map((step, i) => (
+                <div key={i} className="how-step">
+                  <div className="how-icon">{step.icon}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", marginBottom: 8, lineHeight: 1.3 }}>{step.title}</div>
+                  <div style={{ fontSize: 12, color: "#888", lineHeight: 1.6 }}>{step.desc}</div>
                 </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>🧠</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#f0ede8", marginBottom: 4 }}>2. IA decide a categoria</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-                  A inteligência artificial cruza as tendências do momento com a época do ano, eventos atuais e padrões de consumo em Portugal.
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>🛒</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#f0ede8", marginBottom: 4 }}>3. Top 10 gerado</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-                  São selecionados os 10 melhores produtos disponíveis em Portugal com preços reais na Worten, Fnac, Amazon e mais.
-                </div>
-              </div>
-              <div>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>⚡</div>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#f0ede8", marginBottom: 4 }}>4. Publicado automaticamente</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.45)", lineHeight: 1.6 }}>
-                  A lista aparece aqui sem intervenção humana. Cada dia uma nova categoria, sempre relevante, sempre atualizada.
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
-          {/* All categories grid */}
+          {/* All categories */}
           <div className="fade-4">
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 20, fontWeight: 700, color: "#f0ede8", marginBottom: 20 }}>
-              Todas as categorias
-            </h2>
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
+              <h2 style={{ fontSize: 24, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Todas as categorias</h2>
+              <div style={{ flex: 1, height: 1, background: "#ede9e4" }} />
+              <span style={{ fontSize: 13, color: "#999", fontWeight: 500 }}>{allLists.length} listas</span>
+            </div>
 
             {loading ? (
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+              <div className="cat-grid">
                 {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} style={{ background: "#141414", borderRadius: 16, height: 180, border: "1px solid #222" }} />
+                  <div key={i} style={{ background: "#fff", borderRadius: 20, height: 200, border: "1.5px solid #ede9e4" }} />
                 ))}
               </div>
             ) : (
               <div className="cat-grid">
                 {allLists.map((list, i) => (
-                  <a
-                    key={list.slug || list.category}
-                    href={`/${list.slug || list.category}`}
-                    className="cat-card"
-                    style={{ animationDelay: `${i * 60}ms` }}
-                  >
-                    {/* Card header */}
-                    <div style={{ padding: "20px 20px 14px", borderBottom: "1px solid #1a1a1a" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
-                        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                  <a key={list.slug || list.category} href={`/${list.slug || list.category}`} className="cat-card">
+                    <div style={{ padding: "22px 22px 16px", borderBottom: "1px solid #f5f2ee" }}>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#e8593c", textTransform: "uppercase", letterSpacing: "1px" }}>
                           Top 10
                         </span>
-                        <span style={{ fontSize: 10, background: "#1a1a1a", color: "rgba(255,255,255,0.4)", padding: "2px 8px", borderRadius: 4 }}>
+                        <span style={{ fontSize: 11, color: "#bbb", fontWeight: 500 }}>
                           {new Date(list.created_at).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })}
                         </span>
                       </div>
-                      <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: 18, fontWeight: 700, color: "#f0ede8", marginBottom: 6, lineHeight: 1.2 }}>
+                      <h3 style={{ fontSize: 19, fontWeight: 800, color: "#1a1a1a", marginBottom: 8, lineHeight: 1.2, letterSpacing: "-0.3px" }}>
                         {list.category_pt}
                       </h3>
                       {list.headline && (
-                        <p style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", lineHeight: 1.5 }}>
-                          {list.headline.length > 80 ? list.headline.slice(0, 80) + "..." : list.headline}
+                        <p style={{ fontSize: 12, color: "#aaa", lineHeight: 1.5 }}>
+                          {list.headline?.length > 75 ? list.headline.slice(0, 75) + "..." : list.headline}
                         </p>
                       )}
                     </div>
 
-                    {/* Top 3 preview */}
-                    <div style={{ padding: "12px 20px 16px" }}>
+                    <div style={{ padding: "14px 22px 18px" }}>
                       {list.items?.slice(0, 3).map((item, j) => (
-                        <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0", borderBottom: j < 2 ? "1px solid #1a1a1a" : "none" }}>
+                        <div key={j} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", borderBottom: j < 2 ? "1px solid #f5f2ee" : "none" }}>
                           <RankBadge rank={item.rank} />
-                          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.7)", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                          <span style={{ fontSize: 12, color: "#555", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
                             {item.name}
                           </span>
-                          <span style={{ fontSize: 12, fontWeight: 700, color: "#e8593c", flexShrink: 0 }}>
+                          <span style={{ fontSize: 13, fontWeight: 800, color: "#1a1a1a", flexShrink: 0 }}>
                             €{item.price_eur}
                           </span>
                         </div>
                       ))}
-                      <div style={{ marginTop: 12, fontSize: 11, color: "#e8593c", fontWeight: 600 }}>
+                      <div style={{ marginTop: 14, fontSize: 12, color: "#e8593c", fontWeight: 700 }}>
                         Ver lista completa →
                       </div>
                     </div>
@@ -375,29 +354,32 @@ export default function HomePage() {
           </div>
 
           {/* Newsletter */}
-          <div style={{ marginTop: 64, background: "#141414", border: "1px solid #222", borderRadius: 16, padding: "32px", textAlign: "center" }}>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: 22, fontWeight: 800, color: "#f0ede8", marginBottom: 8, letterSpacing: "-0.5px" }}>
+          <div style={{ marginTop: 64, background: "#1a1a1a", borderRadius: 24, padding: "40px 40px", textAlign: "center" }}>
+            <h2 style={{ fontSize: 26, fontWeight: 800, color: "#fff", marginBottom: 8, letterSpacing: "-0.5px" }}>
               Recebe o Top 10 todos os dias
             </h2>
-            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", marginBottom: 24 }}>
-              Newsletter gratuita. Sem spam. Cancela quando quiseres.
+            <p style={{ fontSize: 14, color: "rgba(255,255,255,0.45)", marginBottom: 28, lineHeight: 1.6 }}>
+              Newsletter gratuita. O melhor de Portugal direto na tua caixa de entrada. Cancela quando quiseres.
             </p>
-            <div style={{ display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
               <input type="email" placeholder="o-teu-email@gmail.com"
-                style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 14, padding: "12px 20px", borderRadius: 10, border: "1px solid #333", background: "#0a0a0a", color: "#f0ede8", outline: "none", width: 260 }} />
-              <button style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, padding: "12px 24px", borderRadius: 10, background: "#e8593c", color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
+                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, padding: "13px 20px", borderRadius: 10, border: "1px solid #333", background: "#2a2a2a", color: "#fff", outline: "none", width: 280 }} />
+              <button style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 700, padding: "13px 28px", borderRadius: 10, background: "#e8593c", color: "#fff", border: "none", cursor: "pointer", whiteSpace: "nowrap" }}>
                 Subscrever grátis
               </button>
             </div>
           </div>
 
           {/* Footer */}
-          <div style={{ marginTop: 48, paddingTop: 24, borderTop: "1px solid #1a1a1a", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <span style={{ fontFamily: "'Syne', sans-serif", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.3)" }}>
-              ai<span style={{ color: "#e8593c" }}>10</span>pt.top
-            </span>
-            <p style={{ fontSize: 11, color: "rgba(255,255,255,0.25)", maxWidth: 500, textAlign: "right", lineHeight: 1.5 }}>
-              Os links são links de afiliado. Ao comprar através deles apoias o ai10pt.top sem custo adicional. Listas geradas por IA — sempre verifique os preços nas lojas.
+          <div style={{ marginTop: 40, paddingTop: 24, borderTop: "1.5px solid #ede9e4", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <a href="/" style={{ textDecoration: "none', display: 'flex", alignItems: "baseline", gap: 0 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a" }}>ai</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#e8593c" }}>10</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#1a1a1a" }}>pt</span>
+              <span style={{ fontSize: 16, fontWeight: 800, color: "#ccc" }}>.top</span>
+            </a>
+            <p style={{ fontSize: 11, color: "#bbb", maxWidth: 500, textAlign: "right", lineHeight: 1.6 }}>
+              Os links são links de afiliado. Ao comprar através deles apoias o ai10pt.top sem custo adicional. Listas geradas por IA — verifique sempre os preços nas lojas.
             </p>
           </div>
 
