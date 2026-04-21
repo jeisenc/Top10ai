@@ -22,19 +22,19 @@ function buildAffiliateUrl(store, hint) {
 }
 
 const TAG_STYLES = {
-  "Melhor escolha": { bg: "#e8593c", color: "#fff" },
+  "Melhor escolha": { bg: "#c0392b", color: "#fff" },
   "Melhor preço":   { bg: "#0f6e56", color: "#fff" },
-  "Mais vendido":   { bg: "#185fa5", color: "#fff" },
-  "Premium":        { bg: "#534ab7", color: "#fff" },
-  "Económico":      { bg: "#ba7517", color: "#fff" },
+  "Mais vendido":   { bg: "#1a5fa8", color: "#fff" },
+  "Premium":        { bg: "#4a3fa0", color: "#fff" },
+  "Económico":      { bg: "#7a4f00", color: "#fff" },
 };
 
 const STORE_COLORS = {
-  Worten:    { bg: "#fff0e6", color: "#b34700" },
-  Fnac:      { bg: "#fff8e0", color: "#8a6000" },
-  Amazon:    { bg: "#fff8e0", color: "#8a6000" },
-  Decathlon: { bg: "#e8f4ff", color: "#004899" },
-  Zalando:   { bg: "#fff0f3", color: "#9b1b30" },
+  Worten:    { bg: "#fff0e6", color: "#8a3500" },
+  Fnac:      { bg: "#fff8e0", color: "#6b4a00" },
+  Amazon:    { bg: "#fff8e0", color: "#6b4a00" },
+  Decathlon: { bg: "#e8f4ff", color: "#003d7a" },
+  Zalando:   { bg: "#fff0f3", color: "#7a1030" },
 };
 
 const SEO = {
@@ -73,20 +73,18 @@ function RankBadge({ rank }) {
   if (rank === 2) return <span style={{ fontSize: 20, lineHeight: 1 }}>🥈</span>;
   if (rank === 3) return <span style={{ fontSize: 20, lineHeight: 1 }}>🥉</span>;
   return (
-    <span style={{ fontSize: 13, fontWeight: 700, color: "#bbb", minWidth: 24, textAlign: "center", display: "inline-block" }}>
+    <span style={{ fontSize: 13, fontWeight: 700, color: "#595959", minWidth: 24, textAlign: "center", display: "inline-block" }}>
       {rank}
     </span>
   );
 }
 
-// YouTube video embed — thumbnail that expands inline when tapped
 function YouTubeEmbed({ video }) {
   const [playing, setPlaying] = useState(false);
-
   if (!video?.videoId) return null;
 
   return (
-    <div style={{ marginTop: 10, borderRadius: 10, overflow: "hidden", border: "1px solid #f0ede8" }}>
+    <div style={{ marginTop: 10, borderRadius: 10, overflow: "hidden", border: "1px solid #e8e4df" }}>
       {playing ? (
         <div style={{ position: "relative", paddingBottom: "56.25%", height: 0 }}>
           <iframe
@@ -99,46 +97,19 @@ function YouTubeEmbed({ video }) {
       ) : (
         <button
           onClick={() => setPlaying(true)}
-          style={{
-            width: "100%", border: "none", padding: 0,
-            background: "none", cursor: "pointer",
-            display: "block", position: "relative",
-            WebkitTapHighlightColor: "transparent",
-          }}
+          style={{ width: "100%", border: "none", padding: 0, background: "none", cursor: "pointer", display: "block", position: "relative", WebkitTapHighlightColor: "transparent" }}
         >
-          {/* Thumbnail */}
           <img
             src={video.thumbnail || `https://img.youtube.com/vi/${video.videoId}/mqdefault.jpg`}
             alt={video.title}
             style={{ width: "100%", display: "block", aspectRatio: "16/9", objectFit: "cover" }}
           />
-          {/* Play button overlay */}
-          <div style={{
-            position: "absolute", top: "50%", left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 48, height: 48, borderRadius: "50%",
-            background: "rgba(0,0,0,0.7)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}>
-            <div style={{
-              width: 0, height: 0,
-              borderTop: "9px solid transparent",
-              borderBottom: "9px solid transparent",
-              borderLeft: "16px solid #fff",
-              marginLeft: 3,
-            }} />
+          <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: 48, height: 48, borderRadius: "50%", background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <div style={{ width: 0, height: 0, borderTop: "9px solid transparent", borderBottom: "9px solid transparent", borderLeft: "16px solid #fff", marginLeft: 3 }} />
           </div>
-          {/* Video label */}
-          <div style={{
-            position: "absolute", bottom: 0, left: 0, right: 0,
-            background: "linear-gradient(transparent, rgba(0,0,0,0.7))",
-            padding: "16px 10px 8px",
-            display: "flex", alignItems: "center", gap: 6,
-          }}>
-            <span style={{ fontSize: 9, background: "#FF0000", color: "#fff", fontWeight: 700, padding: "2px 5px", borderRadius: 3, flexShrink: 0 }}>
-              ▶ YouTube
-            </span>
-            <span style={{ fontSize: 10, color: "#fff", lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(transparent, rgba(0,0,0,0.8))", padding: "16px 10px 8px", display: "flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 12, background: "#FF0000", color: "#fff", fontWeight: 700, padding: "2px 6px", borderRadius: 3, flexShrink: 0 }}>▶ YouTube</span>
+            <span style={{ fontSize: 12, color: "#fff", lineHeight: 1.3, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
               {video.title}
             </span>
           </div>
@@ -149,21 +120,19 @@ function YouTubeEmbed({ video }) {
 }
 
 function ProductCard({ item, index }) {
-  const tag = TAG_STYLES[item.tag] || { bg: "#eee", color: "#666" };
-  const store = STORE_COLORS[item.store] || { bg: "#f5f5f5", color: "#666" };
+  const tag = TAG_STYLES[item.tag] || { bg: "#e8e4df", color: "#3d3d3d" };
+  const store = STORE_COLORS[item.store] || { bg: "#f5f2ee", color: "#3d3d3d" };
   const url = buildAffiliateUrl(item.store, item.store_url_hint);
   const isTop3 = item.rank <= 3;
 
   return (
     <div style={{
       background: "#fff",
-      border: isTop3 ? "2px solid #e8593c" : "1.5px solid #ede9e4",
-      borderRadius: 14,
-      overflow: "hidden",
+      border: isTop3 ? "2px solid #c0392b" : "1.5px solid #d4d0cb",
+      borderRadius: 14, overflow: "hidden",
       animation: "fadeUp 0.3s ease both",
       animationDelay: `${index * 40}ms`,
     }}>
-      {/* Product info row */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: 12, padding: "14px 14px 0" }}>
         <div style={{ minWidth: 28, display: "flex", alignItems: "center", justifyContent: "center", paddingTop: 2, flexShrink: 0 }}>
           <RankBadge rank={item.rank} />
@@ -174,39 +143,30 @@ function ProductCard({ item, index }) {
               {item.name}
             </span>
             {item.tag && (
-              <span style={{ fontSize: 9, fontWeight: 700, letterSpacing: "0.4px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: tag.bg, color: tag.color, whiteSpace: "nowrap", flexShrink: 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, letterSpacing: "0.3px", textTransform: "uppercase", padding: "2px 7px", borderRadius: 4, background: tag.bg, color: tag.color, whiteSpace: "nowrap", flexShrink: 0 }}>
                 {item.tag}
               </span>
             )}
           </div>
-          <p style={{ fontSize: 12, color: "#888", margin: "0 0 8px", lineHeight: 1.5 }}>{item.reason_pt}</p>
-          <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: store.bg, color: store.color, textTransform: "uppercase", letterSpacing: "0.4px" }}>
+          <p style={{ fontSize: 13, color: "#595959", margin: "0 0 8px", lineHeight: 1.5 }}>{item.reason_pt}</p>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 7px", borderRadius: 4, background: store.bg, color: store.color, textTransform: "uppercase", letterSpacing: "0.3px" }}>
             {item.store}
           </span>
         </div>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, flexShrink: 0 }}>
           <span style={{ fontSize: "clamp(14px, 4vw, 18px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>€{item.price_eur}</span>
           <a href={url} target="_blank" rel="noopener noreferrer sponsored"
-            style={{
-              fontSize: 11, fontWeight: 700, padding: "6px 12px",
-              background: "#e8593c", color: "#fff", borderRadius: 7,
-              textDecoration: "none", whiteSpace: "nowrap",
-              minHeight: 32, display: "inline-flex", alignItems: "center",
-              WebkitTapHighlightColor: "transparent",
-            }}>
+            style={{ fontSize: 12, fontWeight: 700, padding: "6px 12px", background: "#c0392b", color: "#fff", borderRadius: 7, textDecoration: "none", whiteSpace: "nowrap", minHeight: 32, display: "inline-flex", alignItems: "center", WebkitTapHighlightColor: "transparent" }}>
             Ver →
           </a>
         </div>
       </div>
 
-      {/* YouTube video embed */}
       {item.youtube && (
         <div style={{ padding: "0 14px 14px" }}>
           <YouTubeEmbed video={item.youtube} />
         </div>
       )}
-
-      {/* Bottom padding when no video */}
       {!item.youtube && <div style={{ height: 14 }} />}
     </div>
   );
@@ -215,35 +175,19 @@ function ProductCard({ item, index }) {
 function FAQItem({ faq, index }) {
   const [open, setOpen] = useState(false);
   return (
-    <div style={{
-      background: "#fff", border: "1.5px solid #ede9e4",
-      borderRadius: 12, overflow: "hidden",
-      animation: "fadeUp 0.3s ease both",
-      animationDelay: `${index * 40}ms`,
-    }}>
+    <div style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 12, overflow: "hidden", animation: "fadeUp 0.3s ease both", animationDelay: `${index * 40}ms` }}>
       <button
         onClick={() => setOpen(!open)}
-        style={{
-          width: "100%", display: "flex", alignItems: "center",
-          justifyContent: "space-between", gap: 12,
-          padding: "14px 16px", background: "none", border: "none",
-          cursor: "pointer", textAlign: "left",
-          minHeight: 48, WebkitTapHighlightColor: "transparent",
-        }}
+        style={{ width: "100%", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "14px 16px", background: "none", border: "none", cursor: "pointer", textAlign: "left", minHeight: 48, WebkitTapHighlightColor: "transparent" }}
       >
         <span style={{ fontSize: "clamp(13px, 3.5vw, 14px)", fontWeight: 600, color: "#1a1a1a", lineHeight: 1.4, flex: 1 }}>
           {faq.question}
         </span>
-        <span style={{
-          fontSize: 20, color: "#e8593c", fontWeight: 700,
-          transition: "transform 0.2s", flexShrink: 0,
-          transform: open ? "rotate(45deg)" : "rotate(0deg)",
-          display: "inline-block", lineHeight: 1,
-        }}>+</span>
+        <span style={{ fontSize: 20, color: "#c0392b", fontWeight: 700, transition: "transform 0.2s", flexShrink: 0, transform: open ? "rotate(45deg)" : "rotate(0deg)", display: "inline-block", lineHeight: 1 }}>+</span>
       </button>
       {open && (
-        <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f5f2ee" }}>
-          <p style={{ fontSize: "clamp(12px, 3vw, 13px)", color: "#666", lineHeight: 1.7, marginTop: 12 }}>
+        <div style={{ padding: "0 16px 14px", borderTop: "1px solid #ede9e4" }}>
+          <p style={{ fontSize: "clamp(12px, 3vw, 13px)", color: "#3d3d3d", lineHeight: 1.7, marginTop: 12 }}>
             {faq.answer}
           </p>
         </div>
@@ -254,20 +198,20 @@ function FAQItem({ faq, index }) {
 
 function SkeletonCard() {
   return (
-    <div style={{ background: "#fff", border: "1.5px solid #ede9e4", borderRadius: 14, padding: "14px" }}>
+    <div style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 14, padding: "14px" }}>
       <div style={{ display: "flex", gap: 12 }}>
-        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#f0ede8", flexShrink: 0 }} />
+        <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#e8e4df", flexShrink: 0 }} />
         <div style={{ flex: 1 }}>
-          <div style={{ height: 14, width: "55%", background: "#f0ede8", borderRadius: 5, marginBottom: 8 }} />
-          <div style={{ height: 11, width: "90%", background: "#f5f2ee", borderRadius: 5, marginBottom: 5 }} />
-          <div style={{ height: 11, width: "60%", background: "#f5f2ee", borderRadius: 5 }} />
+          <div style={{ height: 14, width: "55%", background: "#e8e4df", borderRadius: 5, marginBottom: 8 }} />
+          <div style={{ height: 12, width: "90%", background: "#ede9e4", borderRadius: 5, marginBottom: 5 }} />
+          <div style={{ height: 12, width: "60%", background: "#ede9e4", borderRadius: 5 }} />
         </div>
         <div style={{ width: 68, display: "flex", flexDirection: "column", gap: 6, alignItems: "flex-end", flexShrink: 0 }}>
-          <div style={{ height: 18, width: 50, background: "#f0ede8", borderRadius: 5 }} />
-          <div style={{ height: 30, width: 68, background: "#f0ede8", borderRadius: 7 }} />
+          <div style={{ height: 18, width: 50, background: "#e8e4df", borderRadius: 5 }} />
+          <div style={{ height: 30, width: 68, background: "#e8e4df", borderRadius: 7 }} />
         </div>
       </div>
-      <div style={{ height: 160, background: "#f5f2ee", borderRadius: 10, marginTop: 10 }} />
+      <div style={{ height: 160, background: "#ede9e4", borderRadius: 10, marginTop: 10 }} />
     </div>
   );
 }
@@ -346,31 +290,33 @@ export default function CategoryPage({ slug }) {
       </Head>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 16px; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        body { font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif); background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
         .tabs-scroll { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 2px 0; }
         .tabs-scroll::-webkit-scrollbar { display: none; }
-        .cat-btn { font-family: 'Plus Jakarta Sans', sans-serif; font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 999px; border: 1.5px solid #e0ddd8; background: #fff; color: #666; cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center; -webkit-tap-highlight-color: transparent; }
-        .cat-btn:active { border-color: #e8593c; color: #e8593c; }
-        .cat-btn.active { background: #e8593c; color: #fff; border-color: #e8593c; }
-        .ver-link { font-size: 12px; font-weight: 600; padding: 7px 16px; border-radius: 999px; border: 1.5px solid #e0ddd8; background: #fff; color: #555; text-decoration: none; display: inline-flex; align-items: center; min-height: 36px; -webkit-tap-highlight-color: transparent; }
-        .ver-link:active { border-color: #e8593c; color: #e8593c; }
+
+        .cat-btn { font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 999px; border: 1.5px solid #c8c4bf; background: #fff; color: #3d3d3d; cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center; -webkit-tap-highlight-color: transparent; }
+        .cat-btn:active { border-color: #c0392b; color: #c0392b; }
+        .cat-btn.active { background: #c0392b; color: #fff; border-color: #c0392b; }
+
+        .ver-link { font-size: 13px; font-weight: 600; padding: 7px 16px; border-radius: 999px; border: 1.5px solid #c8c4bf; background: #fff; color: #3d3d3d; text-decoration: none; display: inline-flex; align-items: center; min-height: 36px; -webkit-tap-highlight-color: transparent; transition: all 0.15s; }
+        .ver-link:active { border-color: #c0392b; color: #c0392b; }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
 
         {/* Header */}
-        <header style={{ background: "#fff", borderBottom: "1.5px solid #ede9e4", padding: "0 16px", position: "sticky", top: 0, zIndex: 100 }}>
+        <header style={{ background: "#fff", borderBottom: "1.5px solid #d4d0cb", padding: "0 16px", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", height: 52, gap: 12 }}>
             <a href="/" style={{ display: "flex", alignItems: "baseline", textDecoration: "none", flexShrink: 0 }}>
               <span style={{ fontSize: 20, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>ai</span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: "#e8593c", letterSpacing: "-0.5px" }}>10</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "#c0392b", letterSpacing: "-0.5px" }}>10</span>
               <span style={{ fontSize: 20, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>pt</span>
-              <span style={{ fontSize: 20, fontWeight: 800, color: "#ccc", letterSpacing: "-0.5px" }}>.top</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: "#767676", letterSpacing: "-0.5px" }}>.top</span>
             </a>
             <div style={{ flex: 1, overflow: "hidden" }}>
               <div className="tabs-scroll">
@@ -381,31 +327,32 @@ export default function CategoryPage({ slug }) {
                 ))}
               </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 999, padding: "4px 10px" }}>
-              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#22c55e", display: "inline-block", animation: "pulse 2s infinite" }} />
-              <span style={{ fontSize: 10, color: "#15803d", fontWeight: 700 }}>Ao vivo</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0, background: "#f0fdf4", border: "1px solid #86efac", borderRadius: 999, padding: "4px 10px" }}>
+              <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16a34a", display: "inline-block", animation: "pulse 2s infinite" }} />
+              <span style={{ fontSize: 12, color: "#15803d", fontWeight: 700 }}>Ao vivo</span>
             </div>
           </div>
         </header>
 
-        {/* Main */}
         <main style={{ maxWidth: 820, margin: "0 auto", padding: "24px 16px" }}>
 
           {/* Page header */}
           <div style={{ marginBottom: 24, animation: "fadeUp 0.4s ease both" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fff8f6", border: "1.5px solid #fdd0c4", borderRadius: 999, padding: "3px 10px", marginBottom: 10 }}>
-              <span style={{ fontSize: 10, fontWeight: 700, color: "#e8593c", textTransform: "uppercase", letterSpacing: "0.5px" }}>Top 10 do dia</span>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 5, background: "#fff8f6", border: "1.5px solid #f4a995", borderRadius: 999, padding: "3px 10px", marginBottom: 10 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#c0392b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Top 10 do dia</span>
             </div>
             <h1 style={{ fontSize: "clamp(24px, 6vw, 40px)", fontWeight: 800, lineHeight: 1.1, color: "#1a1a1a", marginBottom: 10, letterSpacing: "-0.8px" }}>
               {loading ? "A carregar..." : list?.category_pt || slug}
             </h1>
             {!loading && list?.headline && (
-              <p style={{ fontSize: "clamp(13px, 3.5vw, 15px)", color: "#888", lineHeight: 1.6, maxWidth: 520 }}>{list.headline}</p>
+              <p style={{ fontSize: "clamp(13px, 3.5vw, 15px)", color: "#595959", lineHeight: 1.6, maxWidth: 520 }}>{list.headline}</p>
             )}
-            <div style={{ marginTop: 10, fontSize: 11, color: "#bbb", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <div style={{ marginTop: 10, fontSize: 12, color: "#595959", display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               <span>{todayFormatted}</span>
               <span>·</span>
-              <span style={{ background: "#f5f2ee", padding: "2px 8px", borderRadius: 999, fontSize: 10, color: "#999", fontWeight: 600 }}>Selecionado por IA</span>
+              <span style={{ background: "#ede9e4", padding: "2px 8px", borderRadius: 999, fontSize: 12, color: "#595959", fontWeight: 600 }}>
+                Selecionado por IA
+              </span>
             </div>
           </div>
 
@@ -414,7 +361,7 @@ export default function CategoryPage({ slug }) {
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)
             ) : !list ? (
-              <div style={{ padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#bbb", border: "1.5px solid #ede9e4" }}>
+              <div style={{ padding: 40, textAlign: "center", background: "#fff", borderRadius: 14, color: "#595959", border: "1.5px solid #d4d0cb" }}>
                 <p style={{ fontSize: 14 }}>Nenhuma lista disponível para esta categoria.</p>
               </div>
             ) : (
@@ -431,9 +378,9 @@ export default function CategoryPage({ slug }) {
                 <h2 style={{ fontSize: "clamp(17px, 4.5vw, 22px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
                   Perguntas frequentes
                 </h2>
-                <div style={{ flex: 1, height: 1, background: "#ede9e4" }} />
+                <div style={{ flex: 1, height: 1, background: "#d4d0cb" }} />
               </div>
-              <p style={{ fontSize: 12, color: "#999", marginBottom: 14, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 13, color: "#595959", marginBottom: 14, lineHeight: 1.5 }}>
                 As questões mais comuns sobre {list.category_pt?.toLowerCase()} respondidas por IA.
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -446,8 +393,8 @@ export default function CategoryPage({ slug }) {
 
           {/* Internal links */}
           {!loading && categories.length > 0 && (
-            <div style={{ marginBottom: 40, paddingTop: 24, borderTop: "1.5px solid #ede9e4" }}>
-              <p style={{ fontSize: 11, fontWeight: 700, color: "#bbb", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>
+            <div style={{ marginBottom: 40, paddingTop: 24, borderTop: "1.5px solid #d4d0cb" }}>
+              <p style={{ fontSize: 12, fontWeight: 700, color: "#595959", textTransform: "uppercase", letterSpacing: "1px", marginBottom: 12 }}>
                 Ver também
               </p>
               <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -459,7 +406,7 @@ export default function CategoryPage({ slug }) {
           )}
 
           {!loading && list && (
-            <p style={{ marginBottom: 24, fontSize: 10, color: "#ccc", textAlign: "center", lineHeight: 1.7 }}>
+            <p style={{ marginBottom: 24, fontSize: 12, color: "#595959", textAlign: "center", lineHeight: 1.7 }}>
               Lista gerada por IA. Os links são de afiliado — ao comprar apoias o ai10pt.top sem custo adicional.
             </p>
           )}
@@ -471,11 +418,11 @@ export default function CategoryPage({ slug }) {
             <p style={{ fontSize: "clamp(16px, 4.5vw, 20px)", fontWeight: 800, color: "#fff", marginBottom: 4, letterSpacing: "-0.3px" }}>
               Recebe o Top 10 todos os dias
             </p>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", marginBottom: 16 }}>Newsletter gratuita. Sem spam.</p>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 16 }}>Newsletter gratuita. Sem spam.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 8, maxWidth: 400 }}>
               <input type="email" placeholder="o-teu-email@gmail.com"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 15, padding: "13px 16px", borderRadius: 10, border: "1px solid #333", background: "#2a2a2a", color: "#fff", outline: "none", width: "100%", minHeight: 48 }} />
-              <button style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: 14, fontWeight: 700, padding: "13px", borderRadius: 10, background: "#e8593c", color: "#fff", border: "none", cursor: "pointer", minHeight: 48, WebkitTapHighlightColor: "transparent" }}>
+                style={{ fontSize: 15, padding: "13px 16px", borderRadius: 10, border: "1px solid #444", background: "#2a2a2a", color: "#fff", outline: "none", width: "100%", minHeight: 48 }} />
+              <button style={{ fontSize: 14, fontWeight: 700, padding: "13px", borderRadius: 10, background: "#c0392b", color: "#fff", border: "none", cursor: "pointer", minHeight: 48, WebkitTapHighlightColor: "transparent" }}>
                 Subscrever grátis
               </button>
             </div>
