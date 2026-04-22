@@ -10,21 +10,23 @@ const supabase = createClient(
 
 function getTimeUntilDrop() {
   const now = new Date();
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  tomorrow.setHours(6, 0, 0, 0);
 
-  // If it's before 06:00 today, next drop is today at 06:00
-  const todayDrop = new Date();
-  todayDrop.setHours(6, 0, 0, 0);
-  const target = now < todayDrop ? todayDrop : tomorrow;
+  // Next 06:00 UTC
+  const next = new Date();
+  next.setUTCHours(6, 0, 0, 0);
+  if (now >= next) next.setUTCDate(next.getUTCDate() + 1);
 
-  const diff = target - now;
+  const diff = next - now;
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
   const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+  return { hours, minutes, seconds };
+}
 
-  return { hours, minutes, seconds, total: diff };
+function getTomorrowUTC() {
+  const d = new Date();
+  d.setUTCDate(d.getUTCDate() + 1);
+  return d.toISOString().split("T")[0];
 }
 
 export default function VotingWidget() {
@@ -34,74 +36,53 @@ export default function VotingWidget() {
   const [totalVotes, setTotalVotes] = useState(0);
   const [userVote, setUserVote] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [voting, setVoting] = useState(false);
-  const [voteDate, setVoteDate] = useState(null);
+  const [voteDate] = useState(getTomorrowUTC());
 
-  // Countdown timer
+  // Countdown
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft(getTimeUntilDrop());
-    }, 1000);
+    const timer = setInterval(() => setTimeLeft(getTimeUntilDrop()), 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Load vote options and counts
+  // Load options + votes
   useEffect(() => {
-    async function loadVotes() {
+    const stored = localStorage.getItem(`vote_${voteDate}`);
+    if (stored) setUserVote(stored);
+
+    async function load() {
       setLoading(true);
 
-      // Get tomorrow's date
-      const tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      const tomorrowStr = tomorrow.toISOString().split("T")[0];
-      setVoteDate(tomorrowStr);
-
-      // Check if user already voted (stored in localStorage)
-      const storedVote = localStorage.getItem(`vote_${tomorrowStr}`);
-      if (storedVote) setUserVote(storedVote);
-
-      // Get vote options for tomorrow
-      const { data: optionsData } = await supabase
+      const { data: optData } = await supabase
         .from("vote_options")
         .select("options")
-        .eq("vote_date", tomorrowStr)
+        .eq("vote_date", voteDate)
         .single();
 
-      if (optionsData?.options) {
-        setOptions(optionsData.options);
-      }
+      if (optData?.options) setOptions(optData.options);
 
-      // Get vote counts
-      const { data: votesData } = await supabase
+      const { data: voteData } = await supabase
         .from("daily_votes")
         .select("option_text, vote_count")
-        .eq("vote_date", tomorrowStr);
+        .eq("vote_date", voteDate);
 
-      if (votesData) {
-        const voteMap = {};
+      if (voteData) {
+        const map = {};
         let total = 0;
-        votesData.forEach(v => {
-          voteMap[v.option_text] = v.vote_count;
-          total += v.vote_count;
-        });
-        setVotes(voteMap);
+        voteData.forEach(v => { map[v.option_text] = v.vote_count; total += v.vote_count; });
+        setVotes(map);
         setTotalVotes(total);
       }
 
       setLoading(false);
     }
 
-    loadVotes();
-
-    // Refresh votes every 30 seconds
-    const interval = setInterval(loadVotes, 30000);
+    load();
+    const interval = setInterval(load, 30000);
     return () => clearInterval(interval);
-  }, []);
+  }, [voteDate]);
 
   async function handleVote(option) {
-    if (userVote || voting || !voteDate) return;
-
-    setVoting(true);
+    if (userVote) return;
 
     // Optimistic update
     setUserVote(option);
@@ -109,84 +90,59 @@ export default function VotingWidget() {
     setTotalVotes(prev => prev + 1);
     localStorage.setItem(`vote_${voteDate}`, option);
 
-    // Save to Supabase
+    // Try RPC first, fallback to direct update
     const { error } = await supabase.rpc("increment_vote", {
       p_vote_date: voteDate,
       p_option_text: option,
     });
 
     if (error) {
-      // Fallback: direct update
-      const current = votes[option] || 0;
       await supabase
         .from("daily_votes")
-        .update({ vote_count: current + 1 })
+        .update({ vote_count: (votes[option] || 0) + 1 })
         .eq("vote_date", voteDate)
         .eq("option_text", option);
     }
-
-    setVoting(false);
   }
 
   const pad = n => String(n).padStart(2, "0");
-  const hasVoted = !!userVote;
-  const hasOptions = options.length > 0;
+  const maxVotes = Math.max(...Object.values(votes), 0);
 
   return (
-    <div style={{
-      background: "#fff",
-      border: "1.5px solid #d4d0cb",
-      borderRadius: 16,
-      overflow: "hidden",
-      marginBottom: 20,
-    }}>
+    <div style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 16, overflow: "hidden", marginBottom: 20 }}>
 
-      {/* Countdown header */}
-      <div style={{
-        background: "#1a1a1a",
-        padding: "16px 20px",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        flexWrap: "wrap",
-        gap: 12,
-      }}>
+      {/* Countdown */}
+      <div style={{ background: "#1a1a1a", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 4 }}>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 }}>
             Próximo Top 10 em
           </p>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 4 }}>
-            <span style={{ fontSize: "clamp(28px, 7vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", fontVariantNumeric: "tabular-nums" }}>
-              {pad(timeLeft.hours)}
-            </span>
-            <span style={{ fontSize: 20, color: "#c0392b", fontWeight: 800 }}>:</span>
-            <span style={{ fontSize: "clamp(28px, 7vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", fontVariantNumeric: "tabular-nums" }}>
-              {pad(timeLeft.minutes)}
-            </span>
-            <span style={{ fontSize: 20, color: "#c0392b", fontWeight: 800 }}>:</span>
-            <span style={{ fontSize: "clamp(28px, 7vw, 40px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", fontVariantNumeric: "tabular-nums" }}>
-              {pad(timeLeft.seconds)}
-            </span>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+            {[timeLeft.hours, timeLeft.minutes, timeLeft.seconds].map((val, i) => (
+              <span key={i} style={{ display: "flex", alignItems: "baseline", gap: 3 }}>
+                <span style={{ fontSize: "clamp(28px, 7vw, 42px)", fontWeight: 800, color: "#fff", letterSpacing: "-1px", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>
+                  {pad(val)}
+                </span>
+                {i < 2 && <span style={{ fontSize: 22, color: "#c0392b", fontWeight: 800, lineHeight: 1 }}>:</span>}
+              </span>
+            ))}
           </div>
-          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 2 }}>
-            horas · minutos · segundos
-          </p>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)", marginTop: 4 }}>horas · minutos · segundos</p>
         </div>
-
         <div style={{ textAlign: "right" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end", marginBottom: 4 }}>
             <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", display: "inline-block", animation: "pulse 2s infinite" }} />
-            <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 700 }}>Às 06:00</span>
+            <span style={{ fontSize: 12, color: "#22c55e", fontWeight: 700 }}>Às 06:00 todos os dias</span>
           </div>
           <p style={{ fontSize: 12, color: "rgba(255,255,255,0.5)" }}>Gerado automaticamente por IA</p>
         </div>
       </div>
 
-      {/* Voting section */}
+      {/* Poll */}
       <div style={{ padding: "16px 20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4, flexWrap: "wrap", gap: 6 }}>
           <h3 style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.2px" }}>
-            Adivinha a categoria de amanhã
+            Adivinha a categoria de amanhã 🎯
           </h3>
           {totalVotes > 0 && (
             <span style={{ fontSize: 12, color: "#595959", fontWeight: 500 }}>
@@ -195,7 +151,7 @@ export default function VotingWidget() {
           )}
         </div>
         <p style={{ fontSize: 12, color: "#595959", marginBottom: 14, lineHeight: 1.5 }}>
-          A IA vai escolher a categoria mais procurada pelos portugueses amanhã. Qual achas que vai ser?
+          A IA escolhe diariamente com base no que os portugueses mais pesquisam. Qual achas que será amanhã?
         </p>
 
         {loading ? (
@@ -204,7 +160,7 @@ export default function VotingWidget() {
               <div key={i} style={{ height: 44, background: "#f5f2ee", borderRadius: 10, border: "1.5px solid #e8e4df" }} />
             ))}
           </div>
-        ) : !hasOptions ? (
+        ) : options.length === 0 ? (
           <div style={{ padding: "20px", textAlign: "center", background: "#f8f7f4", borderRadius: 10 }}>
             <p style={{ fontSize: 13, color: "#595959" }}>As opções de amanhã ainda não estão disponíveis.</p>
             <p style={{ fontSize: 12, color: "#767676", marginTop: 4 }}>Volta mais tarde!</p>
@@ -215,51 +171,46 @@ export default function VotingWidget() {
               const count = votes[option] || 0;
               const pct = totalVotes > 0 ? Math.round((count / totalVotes) * 100) : 0;
               const isMyVote = userVote === option;
-              const isWinning = hasVoted && count === Math.max(...Object.values(votes));
+              const isWinning = userVote && count === maxVotes && count > 0;
 
               return (
                 <button
                   key={option}
                   onClick={() => handleVote(option)}
-                  disabled={hasVoted || voting}
+                  disabled={!!userVote}
                   style={{
                     width: "100%", border: "none", background: "none",
-                    padding: 0, cursor: hasVoted ? "default" : "pointer",
+                    padding: 0, cursor: userVote ? "default" : "pointer",
                     textAlign: "left", WebkitTapHighlightColor: "transparent",
                     borderRadius: 10, overflow: "hidden",
                     outline: isMyVote ? "2px solid #c0392b" : "1.5px solid #d4d0cb",
                     outlineOffset: "-1.5px",
-                    transition: "outline 0.15s",
                   }}
                 >
-                  <div style={{ position: "relative", background: "#faf9f7", borderRadius: 10, overflow: "hidden" }}>
+                  <div style={{ position: "relative", background: "#faf9f7", borderRadius: 10, overflow: "hidden", minHeight: 44 }}>
                     {/* Progress bar */}
-                    {hasVoted && (
+                    {userVote && (
                       <div style={{
                         position: "absolute", top: 0, left: 0, bottom: 0,
                         width: `${pct}%`,
-                        background: isMyVote ? "#fff0ee" : "#f5f2ee",
-                        transition: "width 0.6s ease",
+                        background: isMyVote ? "#fff0ee" : "#f0ede8",
+                        transition: "width 0.8s ease",
                         borderRadius: 10,
                       }} />
                     )}
-
-                    {/* Content */}
                     <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "12px 14px", gap: 8 }}>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        {isMyVote && (
-                          <span style={{ fontSize: 14, flexShrink: 0 }}>✓</span>
-                        )}
+                        {isMyVote && <span style={{ fontSize: 14, color: "#c0392b" }}>✓</span>}
                         <span style={{ fontSize: 13, fontWeight: isMyVote ? 700 : 600, color: isMyVote ? "#c0392b" : "#1a1a1a" }}>
                           {option}
                         </span>
-                        {hasVoted && isWinning && (
-                          <span style={{ fontSize: 11, background: "#fff0ee", color: "#c0392b", fontWeight: 700, padding: "1px 6px", borderRadius: 4 }}>
+                        {userVote && isWinning && (
+                          <span style={{ fontSize: 12, background: "#fff0ee", color: "#c0392b", fontWeight: 700, padding: "1px 6px", borderRadius: 4 }}>
                             🔥 A ganhar
                           </span>
                         )}
                       </div>
-                      {hasVoted && (
+                      {userVote && (
                         <span style={{ fontSize: 13, fontWeight: 700, color: isMyVote ? "#c0392b" : "#595959", flexShrink: 0 }}>
                           {pct}%
                         </span>
@@ -272,8 +223,8 @@ export default function VotingWidget() {
           </div>
         )}
 
-        {hasVoted && (
-          <p style={{ fontSize: 12, color: "#595959", marginTop: 12, textAlign: "center", lineHeight: 1.5 }}>
+        {userVote && (
+          <p style={{ fontSize: 12, color: "#595959", marginTop: 14, textAlign: "center", lineHeight: 1.5 }}>
             Voto registado! Descobre se acertaste amanhã às 06:00 🎯
           </p>
         )}
