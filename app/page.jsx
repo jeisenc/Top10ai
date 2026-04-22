@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
+import VotingWidget from "./VotingWidget";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -21,10 +22,10 @@ function buildAffiliateUrl(store, hint) {
 }
 
 const TAG_STYLES = {
-  "Melhor escolha": { bg: "#e8593c", color: "#fff" },
+  "Melhor escolha": { bg: "#c0392b", color: "#fff" },
   "Melhor preço":   { bg: "#0f6e56", color: "#fff" },
-  "Mais vendido":   { bg: "#185fa5", color: "#fff" },
-  "Premium":        { bg: "#534ab7", color: "#fff" },
+  "Mais vendido":   { bg: "#1a5fa8", color: "#fff" },
+  "Premium":        { bg: "#4a3fa0", color: "#fff" },
   "Económico":      { bg: "#7a4f00", color: "#fff" },
 };
 
@@ -54,11 +55,7 @@ function LiveQuestionsFeed({ allLists }) {
     allLists.forEach(list => {
       if (list.faqs?.length) {
         list.faqs.forEach(faq => {
-          questions.push({
-            question: faq.question,
-            category_pt: list.category_pt,
-            slug: list.slug || list.category,
-          });
+          questions.push({ question: faq.question, category_pt: list.category_pt, slug: list.slug || list.category });
         });
       }
     });
@@ -94,15 +91,12 @@ function LiveQuestionsFeed({ allLists }) {
             <span style={{ width: 5, height: 5, borderRadius: "50%", background: "#16a34a", display: "inline-block", animation: "pulse 2s infinite" }} />
             <span style={{ fontSize: 12, color: "#15803d", fontWeight: 700 }}>Ao vivo</span>
           </div>
-          <h3 style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.2px" }}>
-            O que Portugal pergunta
-          </h3>
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a" }}>O que Portugal pergunta</h3>
         </div>
         <p style={{ fontSize: 12, color: "#595959", lineHeight: 1.5 }}>
           Perguntas reais que os portugueses fazem sobre os produtos em destaque. Atualiza automaticamente.
         </p>
       </div>
-
       <div style={{ padding: "10px 12px" }}>
         {visibleQuestions.length === 0 ? (
           Array.from({ length: 4 }).map((_, i) => (
@@ -111,8 +105,7 @@ function LiveQuestionsFeed({ allLists }) {
         ) : (
           visibleQuestions.map(q => (
             <a key={q.key} href={`/${q.slug}`} style={{
-              display: "flex", alignItems: "flex-start", gap: 10,
-              padding: "10px 12px", marginBottom: 6,
+              display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", marginBottom: 6,
               background: q.isNew ? "#fff8f6" : "#faf9f7",
               border: q.isNew ? "1.5px solid #f4a995" : "1px solid #e8e4df",
               borderRadius: 8, textDecoration: "none",
@@ -120,19 +113,14 @@ function LiveQuestionsFeed({ allLists }) {
             }}>
               <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>🔍</span>
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1a", lineHeight: 1.5, marginBottom: 2, wordBreak: "break-word" }}>
-                  {q.question}
-                </p>
-                <span style={{ fontSize: 12, color: "#595959", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.4px" }}>
-                  {q.category_pt}
-                </span>
+                <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1a", lineHeight: 1.5, marginBottom: 2, wordBreak: "break-word" }}>{q.question}</p>
+                <span style={{ fontSize: 12, color: "#595959", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.4px" }}>{q.category_pt}</span>
               </div>
               <span style={{ fontSize: 12, color: "#c0392b", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>Ver →</span>
             </a>
           ))
         )}
       </div>
-
       <div style={{ margin: "0 12px 12px", padding: "12px", background: "#f8f7f4", border: "1.5px dashed #c8c4bf", borderRadius: 8, textAlign: "center" }}>
         <span style={{ fontSize: 12, color: "#595959", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>Espaço publicitário</span>
       </div>
@@ -145,17 +133,10 @@ export default function HomePage() {
   const [allLists, setAllLists] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const todayFormatted = new Date().toLocaleDateString("pt-PT", {
-    weekday: "long", year: "numeric", month: "long", day: "numeric"
-  });
-
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
-      const { data } = await supabase
-        .from("daily_lists")
-        .select("*")
-        .order("created_at", { ascending: false });
+      const { data } = await supabase.from("daily_lists").select("*").order("created_at", { ascending: false });
       if (data) {
         const seen = new Set();
         const unique = data.filter(row => {
@@ -178,41 +159,27 @@ export default function HomePage() {
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { font-size: 16px; }
         body { font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif); background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-
         @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes dropIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
         @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
-
         .fade-up { animation: fadeUp 0.4s ease both; opacity: 0; }
-
         .tabs-scroll { display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none; padding: 2px 0; }
         .tabs-scroll::-webkit-scrollbar { display: none; }
-
         .tab-pill { font-size: 13px; font-weight: 600; padding: 8px 16px; border-radius: 999px; border: 1.5px solid #c8c4bf; background: #fff; color: #3d3d3d; cursor: pointer; white-space: nowrap; transition: all 0.15s; text-decoration: none; min-height: 36px; display: inline-flex; align-items: center; -webkit-tap-highlight-color: transparent; }
-        .tab-pill:hover, .tab-pill:active { border-color: #e8593c; color: #c0392b; background: #fff8f6; }
-
-        .product-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e8e4df; transition: background 0.12s; }
+        .tab-pill:active { border-color: #c0392b; color: #c0392b; }
+        .product-row { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid #e8e4df; }
         .product-row:last-child { border-bottom: none; }
         .product-row:active { background: #faf9f7; }
-
-        .cat-card { background: #fff; border: 1.5px solid #d4d0cb; border-radius: 16px; overflow: hidden; transition: transform 0.2s, border-color 0.2s; text-decoration: none; display: block; }
-        .cat-card:active { transform: scale(0.98); border-color: #e8593c; }
-
+        .cat-card { background: #fff; border: 1.5px solid #d4d0cb; border-radius: 16px; overflow: hidden; text-decoration: none; display: block; transition: transform 0.2s, border-color 0.2s; }
+        .cat-card:active { transform: scale(0.98); border-color: #c0392b; }
         .cat-grid { display: grid; grid-template-columns: 1fr; gap: 12px; }
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .stat-card { background: #fff; border: 1.5px solid #d4d0cb; border-radius: 12px; padding: 14px 12px; text-align: center; }
         .how-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .how-step { background: #fff; border: 1.5px solid #d4d0cb; border-radius: 12px; padding: 16px; }
-
-        @media (min-width: 768px) {
-          .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
-          .how-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; }
-        }
-        @media (min-width: 1100px) {
-          .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; }
-          .desktop-two-col { display: grid !important; grid-template-columns: 1fr 380px; gap: 24px; }
-        }
+        @media (min-width: 768px) { .cat-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; } .how-grid { grid-template-columns: repeat(4, 1fr); gap: 16px; } }
+        @media (min-width: 1100px) { .cat-grid { grid-template-columns: repeat(3, 1fr); gap: 20px; } .desktop-two-col { display: grid !important; grid-template-columns: 1fr 380px; gap: 24px; } }
       `}</style>
 
       <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
@@ -269,7 +236,6 @@ export default function HomePage() {
             <p style={{ fontSize: "clamp(14px, 3.5vw, 17px)", color: "#3d3d3d", lineHeight: 1.7, marginBottom: 20, maxWidth: 520 }}>
               Todos os dias analisamos o que os portugueses mais pesquisam e geramos automaticamente o Top 10 mais relevante — com preços reais e links diretos.
             </p>
-
             <div className="stats-row">
               <div className="stat-card">
                 <div style={{ fontSize: "clamp(20px, 5vw, 28px)", fontWeight: 800, color: "#c0392b", letterSpacing: "-1px", lineHeight: 1 }}>{allLists.length}</div>
@@ -286,31 +252,26 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Voting widget — full width above the two columns */}
+          <div className="fade-up" style={{ marginBottom: 20, animationDelay: "0.1s" }}>
+            <VotingWidget />
+          </div>
+
           {/* Featured + Live Feed */}
-          <div className="fade-up desktop-two-col" style={{ display: "block", marginBottom: 40, animationDelay: "0.1s" }}>
+          <div className="fade-up desktop-two-col" style={{ display: "block", marginBottom: 40, animationDelay: "0.15s" }}>
 
             {!loading && featuredList && (
               <div style={{ marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                    <span style={{ background: "#c0392b", color: "#fff", fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 5, letterSpacing: "0.5px", textTransform: "uppercase" }}>
-                      Em destaque
-                    </span>
-                    <h2 style={{ fontSize: "clamp(15px, 4vw, 20px)", fontWeight: 700, color: "#1a1a1a" }}>
-                      {featuredList.category_pt}
-                    </h2>
+                    <span style={{ background: "#c0392b", color: "#fff", fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 5, letterSpacing: "0.5px", textTransform: "uppercase" }}>Em destaque</span>
+                    <h2 style={{ fontSize: "clamp(15px, 4vw, 20px)", fontWeight: 700, color: "#1a1a1a" }}>{featuredList.category_pt}</h2>
                   </div>
-                  <a href={`/${featuredList.slug || featuredList.category}`} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>
-                    Ver tudo →
-                  </a>
+                  <a href={`/${featuredList.slug || featuredList.category}`} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>Ver tudo →</a>
                 </div>
-
                 {featuredList.headline && (
-                  <p style={{ fontSize: 13, color: "#595959", marginBottom: 12, fontStyle: "italic", lineHeight: 1.5 }}>
-                    "{featuredList.headline}"
-                  </p>
+                  <p style={{ fontSize: 13, color: "#595959", marginBottom: 12, fontStyle: "italic", lineHeight: 1.5 }}>"{featuredList.headline}"</p>
                 )}
-
                 <div style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 16, overflow: "hidden" }}>
                   {featuredList.items?.slice(0, 5).map((item, i) => {
                     const tag = TAG_STYLES[item.tag] || { bg: "#e8e4df", color: "#3d3d3d" };
@@ -318,34 +279,23 @@ export default function HomePage() {
                     const url = buildAffiliateUrl(item.store, item.store_url_hint);
                     return (
                       <div key={i} className="product-row">
-                        <div style={{ minWidth: 26, display: "flex", justifyContent: "center", flexShrink: 0 }}>
-                          <RankBadge rank={item.rank} />
-                        </div>
+                        <div style={{ minWidth: 26, display: "flex", justifyContent: "center", flexShrink: 0 }}><RankBadge rank={item.rank} /></div>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap", marginBottom: 2 }}>
                             <span style={{ fontSize: 13, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3 }}>{item.name}</span>
-                            {item.tag && (
-                              <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: tag.bg, color: tag.color, whiteSpace: "nowrap" }}>
-                                {item.tag}
-                              </span>
-                            )}
+                            {item.tag && <span style={{ fontSize: 12, fontWeight: 700, padding: "2px 6px", borderRadius: 4, background: tag.bg, color: tag.color, whiteSpace: "nowrap" }}>{item.tag}</span>}
                           </div>
                           <p style={{ fontSize: 12, color: "#595959", lineHeight: 1.4 }}>{item.reason_pt}</p>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5, flexShrink: 0 }}>
                           <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>€{item.price_eur}</span>
-                          <a href={url} target="_blank" rel="noopener noreferrer sponsored"
-                            style={{ fontSize: 12, fontWeight: 700, padding: "5px 10px", background: "#c0392b", color: "#fff", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap", minHeight: 32, display: "inline-flex", alignItems: "center", WebkitTapHighlightColor: "transparent" }}>
-                            Ver →
-                          </a>
+                          <a href={url} target="_blank" rel="noopener noreferrer sponsored" style={{ fontSize: 12, fontWeight: 700, padding: "5px 10px", background: "#c0392b", color: "#fff", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap", minHeight: 32, display: "inline-flex", alignItems: "center", WebkitTapHighlightColor: "transparent" }}>Ver →</a>
                         </div>
                       </div>
                     );
                   })}
                   <div style={{ padding: "12px 16px", background: "#faf9f7", borderTop: "1px solid #e8e4df", textAlign: "center" }}>
-                    <a href={`/${featuredList.slug || featuredList.category}`} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700 }}>
-                      Ver os 10 produtos completos →
-                    </a>
+                    <a href={`/${featuredList.slug || featuredList.category}`} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700 }}>Ver os 10 produtos completos →</a>
                   </div>
                 </div>
               </div>
@@ -355,7 +305,7 @@ export default function HomePage() {
           </div>
 
           {/* How it works */}
-          <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.15s" }}>
+          <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.2s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <h2 style={{ fontSize: "clamp(18px, 4.5vw, 24px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Como funciona?</h2>
               <div style={{ flex: 1, height: 1, background: "#d4d0cb" }} />
@@ -377,13 +327,12 @@ export default function HomePage() {
           </div>
 
           {/* All categories */}
-          <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.2s" }}>
+          <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.25s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <h2 style={{ fontSize: "clamp(18px, 4.5vw, 24px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Todas as categorias</h2>
               <div style={{ flex: 1, height: 1, background: "#d4d0cb" }} />
               <span style={{ fontSize: 12, color: "#595959", fontWeight: 500, flexShrink: 0 }}>{allLists.length}</span>
             </div>
-
             {loading ? (
               <div className="cat-grid">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -397,26 +346,16 @@ export default function HomePage() {
                     <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid #ede9e4" }}>
                       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                         <span style={{ fontSize: 12, fontWeight: 700, color: "#c0392b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Top 10</span>
-                        <span style={{ fontSize: 12, color: "#595959", fontWeight: 500 }}>
-                          {new Date(list.created_at).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })}
-                        </span>
+                        <span style={{ fontSize: 12, color: "#595959", fontWeight: 500 }}>{new Date(list.created_at).toLocaleDateString("pt-PT", { day: "numeric", month: "short" })}</span>
                       </div>
-                      <h3 style={{ fontSize: "clamp(15px, 4vw, 18px)", fontWeight: 800, color: "#1a1a1a", marginBottom: 6, lineHeight: 1.2, letterSpacing: "-0.3px" }}>
-                        {list.category_pt}
-                      </h3>
-                      {list.headline && (
-                        <p style={{ fontSize: 12, color: "#595959", lineHeight: 1.4 }}>
-                          {list.headline?.length > 70 ? list.headline.slice(0, 70) + "..." : list.headline}
-                        </p>
-                      )}
+                      <h3 style={{ fontSize: "clamp(15px, 4vw, 18px)", fontWeight: 800, color: "#1a1a1a", marginBottom: 6, lineHeight: 1.2, letterSpacing: "-0.3px" }}>{list.category_pt}</h3>
+                      {list.headline && <p style={{ fontSize: 12, color: "#595959", lineHeight: 1.4 }}>{list.headline?.length > 70 ? list.headline.slice(0, 70) + "..." : list.headline}</p>}
                     </div>
                     <div style={{ padding: "10px 16px 14px" }}>
                       {list.items?.slice(0, 3).map((item, j) => (
                         <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: j < 2 ? "1px solid #ede9e4" : "none" }}>
                           <RankBadge rank={item.rank} />
-                          <span style={{ fontSize: 12, color: "#3d3d3d", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>
-                            {item.name}
-                          </span>
+                          <span style={{ fontSize: 12, color: "#3d3d3d", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{item.name}</span>
                           <span style={{ fontSize: 12, fontWeight: 800, color: "#1a1a1a", flexShrink: 0 }}>€{item.price_eur}</span>
                         </div>
                       ))}
@@ -430,18 +369,11 @@ export default function HomePage() {
 
           {/* Newsletter */}
           <div style={{ background: "#1a1a1a", borderRadius: 20, padding: "28px 20px", textAlign: "center", marginBottom: 32 }}>
-            <h2 style={{ fontSize: "clamp(18px, 5vw, 24px)", fontWeight: 800, color: "#fff", marginBottom: 6, letterSpacing: "-0.5px" }}>
-              Recebe o Top 10 todos os dias
-            </h2>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 20, lineHeight: 1.5 }}>
-              Newsletter gratuita. Cancela quando quiseres.
-            </p>
+            <h2 style={{ fontSize: "clamp(18px, 5vw, 24px)", fontWeight: 800, color: "#fff", marginBottom: 6, letterSpacing: "-0.5px" }}>Recebe o Top 10 todos os dias</h2>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 20, lineHeight: 1.5 }}>Newsletter gratuita. Cancela quando quiseres.</p>
             <div style={{ display: "flex", flexDirection: "column", gap: 10, maxWidth: 360, margin: "0 auto" }}>
-              <input type="email" placeholder="o-teu-email@gmail.com"
-                style={{ fontSize: 15, padding: "14px 16px", borderRadius: 10, border: "1px solid #444", background: "#2a2a2a", color: "#fff", outline: "none", width: "100%", minHeight: 48 }} />
-              <button style={{ fontSize: 15, fontWeight: 700, padding: "14px", borderRadius: 10, background: "#c0392b", color: "#fff", border: "none", cursor: "pointer", minHeight: 48, WebkitTapHighlightColor: "transparent" }}>
-                Subscrever grátis
-              </button>
+              <input type="email" placeholder="o-teu-email@gmail.com" style={{ fontSize: 15, padding: "14px 16px", borderRadius: 10, border: "1px solid #444", background: "#2a2a2a", color: "#fff", outline: "none", width: "100%", minHeight: 48 }} />
+              <button style={{ fontSize: 15, fontWeight: 700, padding: "14px", borderRadius: 10, background: "#c0392b", color: "#fff", border: "none", cursor: "pointer", minHeight: 48 }}>Subscrever grátis</button>
             </div>
           </div>
 
