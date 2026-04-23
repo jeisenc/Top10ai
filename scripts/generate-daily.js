@@ -34,13 +34,39 @@ async function fetchGoogleTrends() {
   }
 }
 
-async function pickCategory(trends, date) {
+async function getRecentSlugs() {
+  // Get the last 14 days of categories to avoid repeats
+  const { data } = await supabase
+    .from("daily_lists")
+    .select("slug, category_pt, created_at")
+    .order("created_at", { ascending: false })
+    .limit(14);
+  return data || [];
+}
+
+async function checkAlreadyGeneratedToday(today) {
+  const startOfDay = `${today}T00:00:00.000Z`;
+  const endOfDay = `${today}T23:59:59.999Z`;
+  const { data } = await supabase
+    .from("daily_lists")
+    .select("id, category_pt, created_at")
+    .gte("created_at", startOfDay)
+    .lte("created_at", endOfDay)
+    .limit(1);
+  return data && data.length > 0 ? data[0] : null;
+}
+
+async function pickCategory(trends, date, recentSlugs) {
   const today = new Date(date);
   const month = today.toLocaleString("pt-PT", { month: "long" });
   const season = getSeason(today.getMonth());
   const trendsText = trends.length > 0
     ? `Trending searches in Portugal today: ${trends.join(", ")}`
     : "No trending data available.";
+
+  const recentText = recentSlugs.length > 0
+    ? `Recent categories (DO NOT repeat or use similar variations of these): ${recentSlugs.map(r => `${r.category_pt} (${r.slug})`).join(", ")}`
+    : "";
 
   const msg = await anthropic.messages.create({
     model: "claude-sonnet-4-20250514",
@@ -50,13 +76,20 @@ async function pickCategory(trends, date) {
       content: `Choose the best product category for a Portuguese shopping website today.
 Date: ${date}, Month: ${month}, Season: ${season}
 ${trendsText}
+${recentText}
+
+Rules:
+- NEVER pick a category that is the same or similar to any recent category listed above
+- If garden/outdoor was recent, pick something completely different
+- Choose a specific, distinct category — not a vague variation of something recent
+- Must be a product category people in Portugal are searching for RIGHT NOW
 
 Return ONLY this JSON:
 {
   "category_en": "english-slug",
   "category_pt": "Nome em Português",
-  "slug": "slug-portugues",
-  "reasoning": "brief explanation"
+  "slug": "slug-em-portugues",
+  "reasoning": "brief explanation of why this is fresh and relevant"
 }`
     }]
   });
@@ -82,27 +115,19 @@ async function generateVoteOptions(trends, date, todayCategory) {
       content: `Generate 4 voting options for a "guess tomorrow's Top 10 category" poll on a Portuguese shopping website.
 
 Context:
-- Date: ${date}
-- Month: ${month}
-- Season: ${season}
+- Date: ${date}, Month: ${month}, Season: ${season}
 - ${trendsText}
 - Today's category was: ${todayCategory}
 
 Rules:
 - All 4 options must be different from today's category
-- Options should be plausible product categories for Portugal
-- Mix of trending, seasonal, and evergreen categories
 - Short names in European Portuguese (2-4 words max)
-- Make them genuinely hard to guess — one obvious choice, one surprising
+- Mix of trending, seasonal and evergreen categories
+- Make them genuinely hard to guess
 
 Return ONLY this JSON:
 {
-  "options": [
-    "Ventiladores",
-    "Roupa de banho",
-    "Câmaras de segurança",
-    "Máquinas de café"
-  ]
+  "options": ["Option 1", "Option 2", "Option 3", "Option 4"]
 }`
     }]
   });
@@ -128,7 +153,7 @@ Generate Top 10. Return this JSON:
   "category_pt": "${category.category_pt}",
   "slug": "${category.slug}",
   "date": "${date}",
-  "headline": "sentence in Portuguese",
+  "headline": "one punchy sentence in Portuguese summarising the list",
   "items": [
     {
       "rank": 1,
@@ -174,6 +199,7 @@ Return ONLY this JSON:
 }
 
 async function fetchYouTubeVideo(productName) {
+  if (!process.env.YOUTUBE_API_KEY) return null;
   try {
     const query = encodeURIComponent(`${productName} review análise português portugal`);
     const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&relevanceLanguage=pt&regionCode=PT&maxResults=3&key=${process.env.YOUTUBE_API_KEY}`;
@@ -204,77 +230,85 @@ function getSeason(month) {
 
 async function main() {
   const today = new Date().toISOString().split("T")[0];
-
-  // Tomorrow's date for the vote options
   const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
   const tomorrowDate = tomorrow.toISOString().split("T")[0];
 
   console.log(`\n🚀 Starting daily generation for ${today}`);
+
+  // ✅ GUARD: Check if already generated today
+  console.log("\n🔍 Checking if already generated today...");
+  const existing = await checkAlreadyGeneratedToday(today);
+  if (existing) {
+    console.log(`⚠️  Already generated today: ${existing.category_pt} at ${existing.created_at}`);
+    console.log("🛑 Stopping to prevent duplicates.");
+    process.exit(0);
+  }
+  console.log("✅ No list generated yet today — proceeding.");
 
   // Step 1 — Google Trends
   console.log("\n📈 Fetching Google Trends for Portugal...");
   const trends = await fetchGoogleTrends();
 
-  // Step 2 — Pick category
+  // Step 2 — Get recent categories to avoid
+  console.log("\n📋 Fetching recent categories to avoid...");
+  const recentSlugs = await getRecentSlugs();
+  console.log(`   Recent: ${recentSlugs.map(r => r.slug).join(", ")}`);
+
+  // Step 3 — Pick category (avoiding recent ones)
   console.log("\n🤖 Asking Claude to pick today's category...");
-  const category = await pickCategory(trends, today);
+  const category = await pickCategory(trends, today, recentSlugs);
   console.log(`✅ Category: ${category.category_pt} (${category.slug})`);
   console.log(`   Reason: ${category.reasoning}`);
 
-  // Step 3 — Generate Top 10
+  // Step 4 — Generate Top 10
   console.log("\n📝 Generating Top 10 list...");
   const list = await generateList(category, today);
   console.log(`✅ Generated ${list.items.length} items`);
 
-  // Step 4 — Generate FAQs
+  // Step 5 — Generate FAQs
   console.log("\n❓ Generating FAQs...");
   const faqs = await generateFAQs(category);
   list.faqs = faqs;
   console.log(`✅ Generated ${faqs.length} FAQs`);
 
-  // Step 5 — Fetch YouTube videos
-  if (process.env.YOUTUBE_API_KEY) {
-    console.log("\n🎬 Fetching YouTube videos...");
-    for (let i = 0; i < list.items.length; i++) {
-      const item = list.items[i];
-      console.log(`  Searching: ${item.name}...`);
-      const video = await fetchYouTubeVideo(item.name);
-      if (video) {
-        item.youtube = video;
-        console.log(`  ✅ Found: ${video.title}`);
-      }
-      await new Promise(r => setTimeout(r, 200));
+  // Step 6 — YouTube videos
+  console.log("\n🎬 Fetching YouTube videos...");
+  for (let i = 0; i < list.items.length; i++) {
+    const item = list.items[i];
+    console.log(`  Searching: ${item.name}...`);
+    const video = await fetchYouTubeVideo(item.name);
+    if (video) {
+      item.youtube = video;
+      console.log(`  ✅ Found: ${video.title}`);
+    } else {
+      console.log(`  ⚠️  No video found`);
     }
+    await new Promise(r => setTimeout(r, 200));
   }
 
-  // Step 6 — Generate tomorrow's vote options
+  // Step 7 — Generate tomorrow's vote options
   console.log("\n🗳️  Generating tomorrow's vote options...");
   const voteOptions = await generateVoteOptions(trends, tomorrowDate, category.category_pt);
   console.log(`✅ Vote options: ${voteOptions.join(", ")}`);
 
-  // Step 7 — Save list to Supabase
+  // Step 8 — Save list to Supabase
   console.log("\n💾 Saving Top 10 to Supabase...");
   const { error: listError } = await supabase.from("daily_lists").insert(list);
   if (listError) {
     console.error("❌ List save error:", listError);
     process.exit(1);
   }
+  console.log("✅ List saved!");
 
-  // Step 8 — Save vote options for tomorrow
+  // Step 9 — Save vote options for tomorrow
   console.log("💾 Saving vote options for tomorrow...");
-
-  // Delete existing options for tomorrow if any
   await supabase.from("vote_options").delete().eq("vote_date", tomorrowDate);
-
-  const { error: voteError } = await supabase
+  const { error: voteOptError } = await supabase
     .from("vote_options")
     .insert({ vote_date: tomorrowDate, options: voteOptions });
 
-  if (voteError) {
-    console.error("❌ Vote options save error:", voteError);
-  } else {
-    // Seed vote counts at 0 for each option
+  if (!voteOptError) {
     await supabase.from("daily_votes").delete().eq("vote_date", tomorrowDate);
     for (const option of voteOptions) {
       await supabase.from("daily_votes").insert({
@@ -283,11 +317,13 @@ async function main() {
         vote_count: 0,
       });
     }
-    console.log("✅ Vote options saved for tomorrow");
+    console.log("✅ Vote options saved!");
+  } else {
+    console.error("❌ Vote options error:", voteOptError);
   }
 
-  console.log(`\n✅ All done! Today: ${category.category_pt}`);
-  console.log(`   URL: ai10pt.top/${category.slug}`);
+  console.log(`\n✅ All done!`);
+  console.log(`   Today: ${category.category_pt} → ai10pt.top/${category.slug}`);
   console.log(`   Tomorrow's vote options ready ✓`);
 }
 
