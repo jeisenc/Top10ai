@@ -428,7 +428,27 @@ export default function CategoryPage({ slug }) {
             </div>
           </div>
         </div>
-
+{/* Footer */}
+        <footer style={{ borderTop: "1.5px solid #d4d0cb", padding: "24px 16px", background: "#f8f7f4" }}>
+          <div style={{ maxWidth: 820, margin: "0 auto", display: "flex", flexDirection: "column", gap: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+              <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline" }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a" }}>ai</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#c0392b" }}>10</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a" }}>pt</span>
+                <span style={{ fontSize: 15, fontWeight: 800, color: "#767676" }}>.top</span>
+              </a>
+              <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center" }}>
+                <a href="/sobre" style={{ fontSize: 13, color: "#595959", textDecoration: "none" }}>Sobre</a>
+                <a href="/privacidade" style={{ fontSize: 13, color: "#595959", textDecoration: "none" }}>Privacidade</a>
+                <a href="/contacto" style={{ fontSize: 13, color: "#595959", textDecoration: "none" }}>Contacto</a>
+              </div>
+            </div>
+            <p style={{ fontSize: 12, color: "#595959", lineHeight: 1.6 }}>
+              Links de afiliado. Ao comprar através deles apoias o ai10pt.top sem custo adicional. Listas geradas por IA.
+            </p>
+          </div>
+        </footer>
       </div>
     </>
   );
