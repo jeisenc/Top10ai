@@ -11,7 +11,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
-      - run: npm install @anthropic-ai/sdk @supabase/supabase-js
+     - run: npm install @anthropic-ai/sdk @supabase/supabase-js ws
       - run: node scripts/backfill-faqs.js
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
