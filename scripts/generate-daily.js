@@ -5,7 +5,8 @@ const ws = require("ws");
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  { realtime: { transport: ws } }
 );
 
 const SYSTEM_PROMPT = `You are a product recommendation engine for ai10pt.top, a Portuguese consumer website.
