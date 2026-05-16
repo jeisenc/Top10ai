@@ -44,4 +44,7 @@ const CATEGORY_EMOJI = {
   "fritadeiras-de-ar": "🍟",
   "portateis": "💻",
   "protetor-solar": "🧴",
-  "moda-verao": "👗
+  "moda-verao": "👘",
+
+
+
