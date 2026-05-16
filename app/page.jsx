@@ -397,9 +397,6 @@ export default function HomePage() {
     Links de afiliado. Ao comprar através deles apoias o ai10pt.top sem custo adicional. Listas geradas por IA.
   </p>
 </div>
-            </p>
-          </div>
-
         </div>
       </div>
     </>
