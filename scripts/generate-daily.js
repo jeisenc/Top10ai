@@ -8,6 +8,23 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   { realtime: { transport: ws } }
 );
+async function pingIndexNow(slug) {
+  try {
+    const url = slug ? `https://ai10pt.top/${slug}` : "https://ai10pt.top";
+    const response = await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        host: "ai10pt.top",
+        key: "aitop10pt-indexnow",
+        urlList: [url, "https://ai10pt.top/sitemap.xml"]
+      })
+    });
+    console.log(`✅ IndexNow ping sent for: ${url} — status ${response.status}`);
+  } catch (err) {
+    console.log("⚠️ IndexNow ping failed:", err.message);
+  }
+}
 
 const SYSTEM_PROMPT = `You are a product recommendation engine for ai10pt.top, a Portuguese consumer website.
 Generate Top 10 product lists for Portuguese shoppers.
@@ -323,6 +340,11 @@ async function main() {
   } else {
     console.error("❌ Vote options error:", voteOptError);
   }
+
+// Ping search engines to index the new page immediately
+  console.log("\n🔍 Pinging search engines...");
+  await pingIndexNow(category.slug);
+  await pingIndexNow("");
 
   console.log(`\n✅ All done!`);
   console.log(`   Today: ${category.category_pt} → ai10pt.top/${category.slug}`);
