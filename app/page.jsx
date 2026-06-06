@@ -1,15 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
-import { Suspense } from "react";
-import dynamic from "next/dynamic";
-
-const HomePageClient = dynamic(() => import("./HomePageClient"), {
-  ssr: false,
-  loading: () => <div style={{ minHeight: "100vh", background: "#f8f7f4" }} />
-});
 
 export const metadata = {
   title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
-  description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial. Atualizado diariamente com preços reais.",
+  description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
 };
 
 export default async function HomePage() {
@@ -33,22 +26,25 @@ export default async function HomePage() {
 
   const featuredList = allLists[0] || null;
 
-  function buildUrl(store, hint) {
-    const e = encodeURIComponent(hint);
-    switch (store) {
-      case "Amazon": return `https://www.amazon.es/s?k=${e}&tag=aitop10pt-21`;
-      case "Worten": return `https://www.worten.pt/search?query=${e}`;
-      case "Fnac": return `https://www.fnac.pt/SearchResult/ResultList.aspx?SCat=0&Search=${e}`;
-      default: return `https://www.google.pt/search?q=${e}`;
-    }
-  }
+  const { default: HomePageClient } = await import("./HomePageClient");
 
   return (
     <>
-      {/* Hidden server-rendered content for Google */}
       <div style={{ display: "none" }} aria-hidden="true">
         <h1>Os melhores produtos escolhidos por IA para Portugal</h1>
-        <nav>
-          {allLists.map(list => (
-            <a key={list.slug} href={`/${list.slug}`}>{list.category_pt}</a>
-          ))}
+        {allLists.map(list => (
+          <a key={list.slug} href={"/" + list.slug}>{list.category_pt}</a>
+        ))}
+        {featuredList && featuredList.items?.map(item => (
+          <div key={item.rank}>{item.rank}. {item.name} - {item.reason_pt} - EUR {item.price_eur}</div>
+        ))}
+        {allLists.filter(l => l.faqs?.length).slice(0, 3).map(list =>
+          list.faqs.map((faq, i) => (
+            <div key={list.slug + i}>{faq.question} {faq.answer}</div>
+          ))
+        )}
+      </div>
+      <HomePageClient initialLists={allLists} initialFeatured={featuredList} />
+    </>
+  );
+}
