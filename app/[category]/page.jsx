@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import CategoryPageClient from "../CategoryPageClient";
 
+// This runs on the SERVER - Google sees full product content
 export async function generateMetadata({ params }) {
   const { category } = await params;
 
@@ -40,7 +41,10 @@ export async function generateMetadata({ params }) {
     description: `Os 10 melhores produtos de ${category.replace(/-/g, " ")} disponíveis em Portugal, selecionados diariamente por inteligência artificial.`,
   };
 
-  return { title: seo.title, description: seo.description };
+  return {
+    title: seo.title,
+    description: seo.description,
+  };
 }
 
 export default async function Page({ params }) {
@@ -51,6 +55,7 @@ export default async function Page({ params }) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
 
+  // Fetch list server-side
   const { data: list } = await supabase
     .from("daily_lists")
     .select("*")
@@ -59,6 +64,7 @@ export default async function Page({ params }) {
     .limit(1)
     .maybeSingle();
 
+  // Fetch all categories server-side
   const { data: categoriesRaw } = await supabase
     .from("daily_lists")
     .select("category, category_pt, slug")
@@ -72,6 +78,7 @@ export default async function Page({ params }) {
     return true;
   });
 
+  // Build schemas server-side for Google
   function buildAffiliateUrl(store, hint) {
     const encoded = encodeURIComponent(hint);
     switch (store) {
@@ -121,21 +128,34 @@ export default async function Page({ params }) {
 
   return (
     <>
+      {/* Schema markup rendered server-side — Google sees this */}
       {itemListSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListSchema) }}
+        />
       )}
       {faqSchema && (
-        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+        />
       )}
+
+      {/* Server-rendered product content for Google */}
       {list && (
-        <div style={{ display: "none" }} aria-hidden="true">
+        <div style={{ display: "none" }} aria-hidden="true" id="ssr-content">
           <h1>{list.category_pt}</h1>
           <p>{list.headline}</p>
           {list.items?.sort((a, b) => a.rank - b.rank).map(item => (
             <div key={item.rank}>
               <h2>{item.rank}. {item.name}</h2>
               <p>{item.reason_pt}</p>
-              <p>Preço: €{item.price_eur} em {item.store}</p>
+              <p>Preço: €{item.price_eur}</p>
+              <p>Loja: {item.store}</p>
+              <a href={buildAffiliateUrl(item.store, item.store_url_hint)}>
+                Ver {item.name} em {item.store}
+              </a>
             </div>
           ))}
           {list.faqs?.map((faq, i) => (
@@ -146,7 +166,13 @@ export default async function Page({ params }) {
           ))}
         </div>
       )}
-      <CategoryPageClient slug={category} initialList={list} initialCategories={categories} />
+
+      {/* Client component handles interactivity */}
+      <CategoryPageClient
+        slug={category}
+        initialList={list}
+        initialCategories={categories}
+      />
     </>
   );
 }
