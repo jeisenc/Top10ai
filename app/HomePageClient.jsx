@@ -200,7 +200,7 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
           {/* Hero */}
           <div className="fade-up" style={{ marginBottom: 28, animationDelay: "0.05s" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff8f6", border: "1.5px solid #f4a995", borderRadius: 999, padding: "4px 12px", marginBottom: 14 }}>
-              <span style={{ fontSize: 12 }}>\uD83D\uDD25</span>
+              <span style={{ fontSize: 12 }}>{"🔥"}</span>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#c0392b" }}>Atualizado diariamente por IA</span>
             </div>
             <h1 style={{ fontSize: "clamp(26px, 7vw, 52px)", fontWeight: 800, lineHeight: 1.1, letterSpacing: "-1px", color: "#1a1a1a", marginBottom: 12 }}>
