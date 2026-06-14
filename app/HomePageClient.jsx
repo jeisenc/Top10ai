@@ -7,7 +7,7 @@ function buildAffiliateUrl(store, hint) {
   const encoded = encodeURIComponent(hint);
   switch (store) {
     case "Amazon":    return `https://www.amazon.es/s?k=${encoded}&tag=aitop10pt-21`;
-    case "Worten":    return `https://www.worten.pt/search?query=${encoded}`;<span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{"🔍"}</span>
+    case "Worten":    return `https://www.worten.pt/search?query=${encoded}`;
     case "Fnac":      return `https://www.fnac.pt/SearchResult/ResultList.aspx?SCat=0&Search=${encoded}`;
     case "Decathlon": return `https://www.decathlon.pt/search?Ntt=${encoded}`;
     case "Zalando":   return `https://www.zalando.pt/catalog/?q=${encoded}`;
@@ -32,9 +32,9 @@ const STORE_COLORS = {
 };
 
 function RankBadge({ rank }) {
-if (rank === 1) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥇"}</span>;
-if (rank === 2) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥈"}</span>;
-if (rank === 3) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥉"}</span>;
+  if (rank === 1) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥇"}</span>;
+  if (rank === 2) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥈"}</span>;
+  if (rank === 3) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥉"}</span>;
   return <span style={{ fontSize: 13, fontWeight: 700, color: "#595959", minWidth: 22, textAlign: "center", display: "inline-block" }}>{rank}</span>;
 }
 
@@ -98,25 +98,25 @@ function LiveQuestionsFeed({ allLists }) {
           ))
         ) : (
           visibleQuestions.map(q => (
-            <a key={q.key} href={`/${q.slug}`} style={{
+            <a key={q.key} href={"/" + q.slug} style={{
               display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", marginBottom: 6,
               background: q.isNew ? "#fff8f6" : "#faf9f7",
               border: q.isNew ? "1.5px solid #f4a995" : "1px solid #e8e4df",
               borderRadius: 8, textDecoration: "none",
               animation: q.isNew ? "dropIn 0.5s ease both" : "none",
             }}>
-              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>\uD83D\uDD0D</span>
+              <span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{"🔍"}</span>
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 13, fontWeight: 600, color: "#1a1a1a", lineHeight: 1.5, marginBottom: 2, wordBreak: "break-word" }}>{q.question}</p>
                 <span style={{ fontSize: 12, color: "#595959", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.4px" }}>{q.category_pt}</span>
               </div>
-              <span style={{ fontSize: 12, color: "#c0392b", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>Ver →</span>
+              <span style={{ fontSize: 12, color: "#c0392b", fontWeight: 700, flexShrink: 0, marginTop: 2 }}>{"Ver →"}</span>
             </a>
           ))
         )}
       </div>
       <div style={{ margin: "0 12px 12px", padding: "12px", background: "#f8f7f4", border: "1.5px dashed #c8c4bf", borderRadius: 8, textAlign: "center" }}>
-        <span style={{ fontSize: 12, color: "#595959", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>Espaço publicitário</span>
+        <span style={{ fontSize: 12, color: "#595959", fontWeight: 600, textTransform: "uppercase", letterSpacing: "1px" }}>{"Espaço publicitário"}</span>
       </div>
     </div>
   );
@@ -159,7 +159,6 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
 
       <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
 
-        {/* Header */}
         <header style={{ background: "#fff", borderBottom: "1.5px solid #d4d0cb", padding: "0 16px", position: "sticky", top: 0, zIndex: 100 }}>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", height: 52, gap: 12 }}>
             <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline", flexShrink: 0 }}>
@@ -171,7 +170,7 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             <div style={{ flex: 1, overflow: "hidden" }}>
               <div className="tabs-scroll">
                 {allLists.map(list => (
-                  <a key={list.slug || list.category} href={`/${list.slug || list.category}`} className="tab-pill">
+                  <a key={list.slug || list.category} href={"/" + (list.slug || list.category)} className="tab-pill">
                     {list.category_pt}
                   </a>
                 ))}
@@ -184,12 +183,11 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
           </div>
         </header>
 
-        {/* Ticker */}
         <div style={{ overflow: "hidden", background: "#c0392b", padding: "9px 0" }}>
           <div style={{ display: "flex", width: "max-content", animation: "ticker 30s linear infinite" }}>
             {[...allLists, ...allLists].map((list, i) => (
-              <a key={i} href={`/${list.slug || list.category}`} style={{ fontSize: 12, fontWeight: 700, color: "#fff", padding: "0 20px", whiteSpace: "nowrap", letterSpacing: "0.8px", textTransform: "uppercase", textDecoration: "none" }}>
-                ▸ TOP 10 {list.category_pt?.toUpperCase()} ·
+              <a key={i} href={"/" + (list.slug || list.category)} style={{ fontSize: 12, fontWeight: 700, color: "#fff", padding: "0 20px", whiteSpace: "nowrap", letterSpacing: "0.8px", textTransform: "uppercase", textDecoration: "none" }}>
+                {"▸ TOP 10 "}{list.category_pt?.toUpperCase()}{" ·"}
               </a>
             ))}
           </div>
@@ -197,7 +195,6 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
 
         <div style={{ maxWidth: 1140, margin: "0 auto", padding: "24px 16px" }}>
 
-          {/* Hero */}
           <div className="fade-up" style={{ marginBottom: 28, animationDelay: "0.05s" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff8f6", border: "1.5px solid #f4a995", borderRadius: 999, padding: "4px 12px", marginBottom: 14 }}>
               <span style={{ fontSize: 12 }}>{"🔥"}</span>
@@ -209,7 +206,7 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
               para Portugal
             </h1>
             <p style={{ fontSize: "clamp(14px, 3.5vw, 17px)", color: "#3d3d3d", lineHeight: 1.7, marginBottom: 20, maxWidth: 520 }}>
-              Todos os dias analisamos o que os portugueses mais pesquisam e geramos automaticamente o Top 10 mais relevante — com preços reais e links diretos.
+              Todos os dias analisamos o que os portugueses mais pesquisam e geramos automaticamente o Top 10 mais relevante com preços reais e links diretos.
             </p>
             <div className="stats-row">
               <div className="stat-card">
@@ -222,19 +219,16 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
               </div>
               <div className="stat-card">
                 <div style={{ fontSize: "clamp(20px, 5vw, 28px)", fontWeight: 800, color: "#c0392b", letterSpacing: "-1px", lineHeight: 1 }}>24h</div>
-                <div style={{ fontSize: 12, color: "#595959", marginTop: 3, fontWeight: 500 }}>Atualização</div>
+                <div style={{ fontSize: 12, color: "#595959", marginTop: 3, fontWeight: 500 }}>{"Atualização"}</div>
               </div>
             </div>
           </div>
 
-          {/* Voting widget */}
           <div className="fade-up" style={{ marginBottom: 20, animationDelay: "0.1s" }}>
             <VotingWidget />
           </div>
 
-          {/* Featured + Live Feed */}
           <div className="fade-up desktop-two-col" style={{ display: "block", marginBottom: 40, animationDelay: "0.15s" }}>
-
             {featuredList && (
               <div style={{ marginBottom: 20 }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12, gap: 8 }}>
@@ -242,7 +236,7 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
                     <span style={{ background: "#c0392b", color: "#fff", fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 5, letterSpacing: "0.5px", textTransform: "uppercase" }}>Em destaque</span>
                     <h2 style={{ fontSize: "clamp(15px, 4vw, 20px)", fontWeight: 700, color: "#1a1a1a" }}>{featuredList.category_pt}</h2>
                   </div>
-                  <a href={`/${featuredList.slug || featuredList.category}`} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>Ver tudo →</a>
+                  <a href={"/" + (featuredList.slug || featuredList.category)} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700, whiteSpace: "nowrap" }}>{"Ver tudo →"}</a>
                 </div>
                 {featuredList.headline && (
                   <p style={{ fontSize: 13, color: "#595959", marginBottom: 12, fontStyle: "italic", lineHeight: 1.5 }}>"{featuredList.headline}"</p>
@@ -263,23 +257,21 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
                           <p style={{ fontSize: 12, color: "#595959", lineHeight: 1.4 }}>{item.reason_pt}</p>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5, flexShrink: 0 }}>
-                          <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>€{item.price_eur}</span>
-                          <a href={url} target="_blank" rel="noopener noreferrer sponsored" style={{ fontSize: 12, fontWeight: 700, padding: "5px 10px", background: "#c0392b", color: "#fff", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap", minHeight: 32, display: "inline-flex", alignItems: "center" }}>Ver →</a>
+                          <span style={{ fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>{"€"}{item.price_eur}</span>
+                          <a href={url} target="_blank" rel="noopener noreferrer sponsored" style={{ fontSize: 12, fontWeight: 700, padding: "5px 10px", background: "#c0392b", color: "#fff", borderRadius: 6, textDecoration: "none", whiteSpace: "nowrap", minHeight: 32, display: "inline-flex", alignItems: "center" }}>{"Ver →"}</a>
                         </div>
                       </div>
                     );
                   })}
                   <div style={{ padding: "12px 16px", background: "#faf9f7", borderTop: "1px solid #e8e4df", textAlign: "center" }}>
-                    <a href={`/${featuredList.slug || featuredList.category}`} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700 }}>Ver os 10 produtos completos →</a>
+                    <a href={"/" + (featuredList.slug || featuredList.category)} style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700 }}>{"Ver os 10 produtos completos →"}</a>
                   </div>
                 </div>
               </div>
             )}
-
             <LiveQuestionsFeed allLists={allLists} />
           </div>
 
-          {/* How it works */}
           <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.2s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <h2 style={{ fontSize: "clamp(18px, 4.5vw, 24px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Como funciona?</h2>
@@ -287,10 +279,10 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             </div>
             <div className="how-grid">
               {[
-                { icon: "\uD83D\uDCC8", title: "Analisa tendências", desc: "Às 06:00 verifica o que os portugueses mais pesquisam." },
-                { icon: "\uD83E\uDDE0", title: "IA escolhe a categoria", desc: "Cruza tendências, época do ano e eventos atuais." },
-                { icon: "\uD83D\uDED2", title: "Gera o Top 10", desc: "10 produtos com preços reais na Worten, Fnac, Amazon." },
-                { icon: "\u26A1", title: "Publica automaticamente", desc: "Sem intervenção humana. Sempre relevante." },
+                { icon: "📈", title: "Analisa tendências", desc: "Às 06:00 verifica o que os portugueses mais pesquisam." },
+                { icon: "🧠", title: "IA escolhe a categoria", desc: "Cruza tendências, época do ano e eventos atuais." },
+                { icon: "🛒", title: "Gera o Top 10", desc: "10 produtos com preços reais na Worten, Fnac, Amazon." },
+                { icon: "⚡", title: "Publica automaticamente", desc: "Sem intervenção humana. Sempre relevante." },
               ].map((step, i) => (
                 <div key={i} className="how-step">
                   <div style={{ fontSize: 22, marginBottom: 8 }}>{step.icon}</div>
@@ -301,21 +293,20 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             </div>
           </div>
 
-          {/* Articles section */}
           <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.22s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
               <h2 style={{ fontSize: "clamp(18px, 4.5vw, 24px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Artigos sobre IA</h2>
               <div style={{ flex: 1, height: 1, background: "#d4d0cb" }} />
-              <a href="/artigos" style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700, flexShrink: 0 }}>Ver todos →</a>
+              <a href="/artigos" style={{ fontSize: 13, color: "#c0392b", textDecoration: "none", fontWeight: 700, flexShrink: 0 }}>{"Ver todos →"}</a>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
               {[
-                { slug: "ia-em-portugal", emoji: "\uD83C\uDDF5\uD83C\uDDF9", category: "Sociedade", title: "IA em Portugal: estamos prontos ou apenas a fingir que sim?", readTime: "6 min" },
-                { slug: "do-google-para-a-ia", emoji: "\uD83D\uDD0D", category: "Comportamento", title: "Deixámos de googlar. Passámos a perguntar à IA. E agora?", readTime: "7 min" },
-                { slug: "como-confiar-na-ia", emoji: "\uD83E\uDD1D", category: "Reflexão", title: "Como confiar na IA — sem ser ingénuo nem paranoico", readTime: "5 min" },
-                { slug: "ia-e-saude", emoji: "\uD83E\uDE7A", category: "Saúde", title: "Perguntei à IA os meus sintomas. E agora fico em pânico.", readTime: "8 min" },
+                { slug: "ia-em-portugal", emoji: "🇵🇹", category: "Sociedade", title: "IA em Portugal: estamos prontos ou apenas a fingir que sim?", readTime: "6 min" },
+                { slug: "do-google-para-a-ia", emoji: "🔍", category: "Comportamento", title: "Deixámos de googlar. Passámos a perguntar à IA. E agora?", readTime: "7 min" },
+                { slug: "como-confiar-na-ia", emoji: "🤝", category: "Reflexão", title: "Como confiar na IA — sem ser ingénuo nem paranoico", readTime: "5 min" },
+                { slug: "ia-e-saude", emoji: "🩺", category: "Saúde", title: "Perguntei à IA os meus sintomas. E agora fico em pânico.", readTime: "8 min" },
               ].map((article, i) => (
-                <a key={article.slug} href={`/artigos/${article.slug}`} style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 14, overflow: "hidden", textDecoration: "none", display: "block", transition: "transform 0.2s, border-color 0.2s" }}>
+                <a key={article.slug} href={"/artigos/" + article.slug} style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 14, overflow: "hidden", textDecoration: "none", display: "block", transition: "transform 0.2s, border-color 0.2s" }}>
                   <div style={{ background: "#1a1a1a", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 36 }}>{article.emoji}</span>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#c0392b", background: "rgba(192,57,43,0.15)", border: "1px solid rgba(192,57,43,0.3)", borderRadius: 999, padding: "2px 8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>{article.category}</span>
@@ -323,8 +314,8 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
                   <div style={{ padding: "14px 16px 16px" }}>
                     <p style={{ fontSize: 14, fontWeight: 700, color: "#1a1a1a", lineHeight: 1.3, marginBottom: 8, letterSpacing: "-0.2px" }}>{article.title}</p>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                      <span style={{ fontSize: 12, color: "#767676" }}>{article.readTime} de leitura</span>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#c0392b" }}>Ler →</span>
+                      <span style={{ fontSize: 12, color: "#767676" }}>{article.readTime}{" de leitura"}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#c0392b" }}>{"Ler →"}</span>
                     </div>
                   </div>
                 </a>
@@ -332,7 +323,6 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             </div>
           </div>
 
-          {/* All categories */}
           <div className="fade-up" style={{ marginBottom: 40, animationDelay: "0.25s" }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
               <h2 style={{ fontSize: "clamp(18px, 4.5vw, 24px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>Todas as categorias</h2>
@@ -341,7 +331,7 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             </div>
             <div className="cat-grid">
               {allLists.map((list) => (
-                <a key={list.slug || list.category} href={`/${list.slug || list.category}`} className="cat-card">
+                <a key={list.slug || list.category} href={"/" + (list.slug || list.category)} className="cat-card">
                   <div style={{ padding: "16px 16px 12px", borderBottom: "1px solid #ede9e4" }}>
                     <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
                       <span style={{ fontSize: 12, fontWeight: 700, color: "#c0392b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Top 10</span>
@@ -355,17 +345,16 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
                       <div key={j} style={{ display: "flex", alignItems: "center", gap: 8, padding: "5px 0", borderBottom: j < 2 ? "1px solid #ede9e4" : "none" }}>
                         <RankBadge rank={item.rank} />
                         <span style={{ fontSize: 12, color: "#3d3d3d", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontWeight: 500 }}>{item.name}</span>
-                        <span style={{ fontSize: 12, fontWeight: 800, color: "#1a1a1a", flexShrink: 0 }}>€{item.price_eur}</span>
+                        <span style={{ fontSize: 12, fontWeight: 800, color: "#1a1a1a", flexShrink: 0 }}>{"€"}{item.price_eur}</span>
                       </div>
                     ))}
-                    <div style={{ marginTop: 10, fontSize: 13, color: "#c0392b", fontWeight: 700 }}>Ver lista completa →</div>
+                    <div style={{ marginTop: 10, fontSize: 13, color: "#c0392b", fontWeight: 700 }}>{"Ver lista completa →"}</div>
                   </div>
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Newsletter */}
           <div style={{ background: "#1a1a1a", borderRadius: 20, padding: "28px 20px", textAlign: "center", marginBottom: 32 }}>
             <h2 style={{ fontSize: "clamp(18px, 5vw, 24px)", fontWeight: 800, color: "#fff", marginBottom: 6, letterSpacing: "-0.5px" }}>Recebe o Top 10 todos os dias</h2>
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.75)", marginBottom: 20, lineHeight: 1.5 }}>Newsletter gratuita. Cancela quando quiseres.</p>
@@ -375,7 +364,6 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             </div>
           </div>
 
-          {/* Footer */}
           <div style={{ paddingTop: 20, borderTop: "1.5px solid #d4d0cb", display: "flex", flexDirection: "column", gap: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
               <div style={{ display: "flex", alignItems: "baseline" }}>
