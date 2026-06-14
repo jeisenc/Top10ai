@@ -301,10 +301,10 @@ export default function HomePageClient({ initialLists, initialFeatured }) {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 14 }}>
               {[
-                { slug: "ia-em-portugal", emoji: "🇵🇹", category: "Sociedade", title: "IA em Portugal: estamos prontos ou apenas a fingir que sim?", readTime: "6 min" },
-                { slug: "do-google-para-a-ia", emoji: "🔍", category: "Comportamento", title: "Deixámos de googlar. Passámos a perguntar à IA. E agora?", readTime: "7 min" },
-                { slug: "como-confiar-na-ia", emoji: "🤝", category: "Reflexão", title: "Como confiar na IA — sem ser ingénuo nem paranoico", readTime: "5 min" },
-                { slug: "ia-e-saude", emoji: "🩺", category: "Saúde", title: "Perguntei à IA os meus sintomas. E agora fico em pânico.", readTime: "8 min" },
+                { slug: "mundial-2026", emoji: "⚽", category: "Mundial 2026", title: "Mundial 2026: a IA escolheu os melhores ecrãs para ver Portugal jogar", readTime: "6 min" },
+{ slug: "google-modo-ia", emoji: "🔍", category: "Tecnologia", title: "O Google agora responde com IA — o que significa para as tuas compras?", readTime: "7 min" },
+{ slug: "verao-2026", emoji: "☀️", category: "Tendências", title: "Verão 2026: a IA analisou o que os portugueses mais compram nesta época", readTime: "6 min" },
+{ slug: "ia-vs-compras", emoji: "🧪", category: "Teste", title: "Pedi à IA para encontrar as melhores ofertas do mercado português. Funciona?", readTime: "8 min" },,
               ].map((article, i) => (
                 <a key={article.slug} href={"/artigos/" + article.slug} style={{ background: "#fff", border: "1.5px solid #d4d0cb", borderRadius: 14, overflow: "hidden", textDecoration: "none", display: "block", transition: "transform 0.2s, border-color 0.2s" }}>
                   <div style={{ background: "#1a1a1a", padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
