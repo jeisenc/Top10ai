@@ -92,5 +92,27 @@ export default function Artigos() {
     <>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif); background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
+
+        </div>
+        </main>
+
+        <footer style={{ borderTop: "1.5px solid #d4d0cb", padding: "24px 16px", background: "#f8f7f4" }}>
+          <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline" }}>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a" }}>ai</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#c0392b" }}>10</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#1a1a1a" }}>pt</span>
+              <span style={{ fontSize: 15, fontWeight: 800, color: "#767676" }}>.top</span>
+            </a>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
+              <a href="/sobre" className="footer-link">Sobre</a>
+              <a href="/privacidade" className="footer-link">Privacidade</a>
+              <a href="/contacto" className="footer-link">Contacto</a>
+            </div>
+          </div>
+        </footer>
+      </div>
+    </>
+  );
+}body { font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif); background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1;
