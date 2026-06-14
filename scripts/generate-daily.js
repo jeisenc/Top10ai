@@ -216,7 +216,25 @@ Return ONLY this JSON:
   raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
   return JSON.parse(raw).faqs;
 }
-
+async function fetchProductImage(productName, category) {
+  if (!process.env.GOOGLE_SEARCH_API_KEY || !process.env.GOOGLE_SEARCH_ENGINE_ID) {
+    console.log("  ⚠️  No Google Search API key found");
+    return null;
+  }
+  try {
+    const query = encodeURIComponent(`${productName} ${category}`);
+    const url = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${query}&searchType=image&num=1&imgSize=medium&safe=active`;
+    const response = await fetch(url);
+    const data = await response.json();
+    if (data.items && data.items.length > 0) {
+      return data.items[0].link;
+    }
+    return null;
+  } catch (err) {
+    console.log(`  ⚠️  Could not fetch image for ${productName}:`, err.message);
+    return null;
+  }
+}
 async function fetchYouTubeVideo(productName) {
   if (!process.env.YOUTUBE_API_KEY) return null;
   try {
