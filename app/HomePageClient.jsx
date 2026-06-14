@@ -32,9 +32,9 @@ const STORE_COLORS = {
 };
 
 function RankBadge({ rank }) {
-  if (rank === 1) return <span style={{ fontSize: 18, lineHeight: 1 }}>\uD83E\uDD47</span>;
-  if (rank === 2) return <span style={{ fontSize: 18, lineHeight: 1 }}>\uD83E\uDD48</span>;
-  if (rank === 3) return <span style={{ fontSize: 18, lineHeight: 1 }}>\uD83E\uDD49</span>;
+if (rank === 1) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥇"}</span>;
+if (rank === 2) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥈"}</span>;
+if (rank === 3) return <span style={{ fontSize: 20, lineHeight: 1 }}>{"🥉"}</span>;
   return <span style={{ fontSize: 13, fontWeight: 700, color: "#595959", minWidth: 22, textAlign: "center", display: "inline-block" }}>{rank}</span>;
 }
 
