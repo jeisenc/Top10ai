@@ -5,6 +5,51 @@ export const metadata = {
 
 const ARTICLES = [
   {
+    slug: "mundial-2026",
+    emoji: "⚽",
+    category: "Mundial 2026",
+    title: "Mundial 2026: a IA escolheu os melhores ecrãs para ver Portugal jogar",
+    excerpt: "Portugal joga o Mundial 2026 e a IA analisou os melhores televisores, projetores e barras de som disponíveis em Portugal para não perderes um golo.",
+    readTime: "6 min",
+    date: "Junho 2026",
+  },
+  {
+    slug: "google-modo-ia",
+    emoji: "🔍",
+    category: "Tecnologia",
+    title: "O Google agora responde com IA — o que é que isso significa para as tuas compras?",
+    excerpt: "O Google lançou o Modo IA e está a mudar a forma como os portugueses pesquisam produtos. O que muda para o consumidor português?",
+    readTime: "7 min",
+    date: "Junho 2026",
+  },
+  {
+    slug: "verao-2026",
+    emoji: "☀️",
+    category: "Tendências",
+    title: "Verão 2026: a IA analisou o que os portugueses mais compram nesta época",
+    excerpt: "Protetor solar, ventiladores, roupa de banho — a IA analisou os padrões de compra dos portugueses no verão e o resultado surpreende.",
+    readTime: "6 min",
+    date: "Junho 2026",
+  },
+  {
+    slug: "ia-vs-compras",
+    emoji: "🧪",
+    category: "Teste",
+    title: "Pedi à IA para encontrar as melhores ofertas do mercado português. Funciona?",
+    excerpt: "Testámos usar o ChatGPT, o Claude e o Gemini para encontrar as melhores ofertas em Portugal. Os resultados são melhores do que esperávamos. Mas há um problema sério.",
+    readTime: "8 min",
+    date: "Junho 2026",
+  },
+  {
+    slug: "ia-preve-compras",
+    emoji: "🔮",
+    category: "Reflexão",
+    title: "A IA sabe o que vais comprar antes de tu saberes. É assustador ou conveniente?",
+    excerpt: "Os algoritmos de recomendação já preveem as tuas próximas compras com precisão assustadora. A questão é: isso é um serviço ou uma manipulação?",
+    readTime: "7 min",
+    date: "Junho 2026",
+  },
+  {
     slug: "ia-em-portugal",
     emoji: "🇵🇹",
     category: "Sociedade",
@@ -18,7 +63,7 @@ const ARTICLES = [
     emoji: "🔍",
     category: "Comportamento",
     title: "Deixámos de googlar. Passámos a perguntar à IA. E agora?",
-    excerpt: "Durante 25 anos, o Google foi o intermediário entre nós e o conhecimento. Algo mudou. Estamos a fazer perguntas diferentes, a confiar de forma diferente — e isso tem consequências que ainda não percebemos bem.",
+    excerpt: "Durante 25 anos, o Google foi o intermediário entre nós e o conhecimento. Algo mudou. Estamos a fazer perguntas diferentes, a confiar de forma diferente.",
     readTime: "7 min",
     date: "Abril 2026",
   },
@@ -27,7 +72,7 @@ const ARTICLES = [
     emoji: "🤝",
     category: "Reflexão",
     title: "Como confiar na IA — sem ser ingénuo nem paranoico",
-    excerpt: "A IA mente. A IA também acerta. Como é que uma pessoa normal, sem doutoramento em machine learning, decide quando acreditar e quando questionar? É mais simples do que pensas.",
+    excerpt: "A IA mente. A IA também acerta. Como é que uma pessoa normal decide quando acreditar e quando questionar? É mais simples do que pensas.",
     readTime: "5 min",
     date: "Abril 2026",
   },
@@ -36,7 +81,7 @@ const ARTICLES = [
     emoji: "🩺",
     category: "Saúde",
     title: "Perguntei à IA os meus sintomas. E agora fico em pânico.",
-    excerpt: "Milhões de portugueses já usaram o ChatGPT ou o Google para verificar sintomas. Alguns ficaram descansados. Outros entraram em espiral. A questão não é se devemos usar IA para saúde — é como.",
+    excerpt: "Milhões de portugueses já usaram o ChatGPT ou o Google para verificar sintomas. Alguns ficaram descansados. Outros entraram em espiral.",
     readTime: "8 min",
     date: "Abril 2026",
   },
@@ -47,7 +92,7 @@ export default function Artigos() {
     <>
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif); background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        body { font-family: var(--font-jakarta, 'Plus Jakarta Sans', sans-serif); background: #f8f7f4; color: #1a1a1a; -webkit-font-smoothing: antialiased; }
         @keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
         .article-card { background: #fff; border: 1.5px solid #d4d0cb; border-radius: 16px; overflow: hidden; text-decoration: none; display: block; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
         .article-card:hover { transform: translateY(-3px); border-color: #c0392b; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
@@ -57,7 +102,6 @@ export default function Artigos() {
 
       <div style={{ minHeight: "100vh", background: "#f8f7f4" }}>
 
-        {/* Header */}
         <header style={{ background: "#fff", borderBottom: "1.5px solid #d4d0cb", padding: "0 16px" }}>
           <div style={{ maxWidth: 1140, margin: "0 auto", display: "flex", alignItems: "center", height: 52, justifyContent: "space-between" }}>
             <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline" }}>
@@ -66,13 +110,12 @@ export default function Artigos() {
               <span style={{ fontSize: 20, fontWeight: 800, color: "#1a1a1a" }}>pt</span>
               <span style={{ fontSize: 20, fontWeight: 800, color: "#767676" }}>.top</span>
             </a>
-            <a href="/" style={{ fontSize: 13, fontWeight: 600, color: "#595959", textDecoration: "none" }}>← Voltar ao Top 10</a>
+            <a href="/" style={{ fontSize: 13, fontWeight: 600, color: "#595959", textDecoration: "none" }}>{"← Voltar ao Top 10"}</a>
           </div>
         </header>
 
         <main style={{ maxWidth: 860, margin: "0 auto", padding: "40px 16px 64px" }}>
 
-          {/* Hero */}
           <div style={{ marginBottom: 40, animation: "fadeUp 0.4s ease both" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#fff8f6", border: "1.5px solid #f4a995", borderRadius: 999, padding: "3px 10px", marginBottom: 14 }}>
               <span style={{ fontSize: 12, fontWeight: 700, color: "#c0392b", textTransform: "uppercase", letterSpacing: "0.5px" }}>Artigos</span>
@@ -82,28 +125,24 @@ export default function Artigos() {
               <span style={{ color: "#c0392b" }}>amigo que percebe do assunto</span>
             </h1>
             <p style={{ fontSize: "clamp(14px, 3.5vw, 17px)", color: "#595959", lineHeight: 1.7, maxWidth: 560 }}>
-              Sem jargão técnico, sem alarmismo, sem hype. Reflexões honestas sobre como a inteligência artificial está a mudar a forma como vivemos, compramos, pesquisamos e decidimos — em Portugal e no mundo.
+              Sem jargão técnico, sem alarmismo, sem hype. Reflexões honestas sobre como a inteligência artificial está a mudar a forma como vivemos, compramos, pesquisamos e decidimos.
             </p>
           </div>
 
-          {/* Articles grid */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 20 }}>
             {ARTICLES.map((article, i) => (
-              <a
+              
                 key={article.slug}
                 href={"/artigos/" + article.slug}
                 className="article-card"
                 style={{ animationDelay: (i * 60) + "ms", animation: "fadeUp 0.4s ease both", opacity: 0 }}
               >
-                {/* Emoji hero */}
                 <div style={{ background: "#1a1a1a", padding: "32px 24px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                   <span style={{ fontSize: 52 }}>{article.emoji}</span>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#c0392b", background: "rgba(192,57,43,0.15)", border: "1px solid rgba(192,57,43,0.3)", borderRadius: 999, padding: "3px 10px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
                     {article.category}
                   </span>
                 </div>
-
-                {/* Content */}
                 <div style={{ padding: "20px 20px 22px" }}>
                   <h2 style={{ fontSize: "clamp(15px, 3.5vw, 18px)", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.25, marginBottom: 10, letterSpacing: "-0.3px" }}>
                     {article.title}
@@ -114,10 +153,10 @@ export default function Artigos() {
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       <span style={{ fontSize: 12, color: "#767676" }}>{article.readTime}</span>
-                      <span style={{ fontSize: 12, color: "#d4d0cb" }}>·</span>
+                      <span style={{ fontSize: 12, color: "#d4d0cb" }}>{"·"}</span>
                       <span style={{ fontSize: 12, color: "#767676" }}>{article.date}</span>
                     </div>
-                    <span style={{ fontSize: 13, fontWeight: 700, color: "#c0392b" }}>Ler →</span>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: "#c0392b" }}>{"Ler →"}</span>
                   </div>
                 </div>
               </a>
@@ -126,7 +165,6 @@ export default function Artigos() {
 
         </main>
 
-        {/* Footer */}
         <footer style={{ borderTop: "1.5px solid #d4d0cb", padding: "24px 16px", background: "#f8f7f4" }}>
           <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
             <a href="/" style={{ textDecoration: "none", display: "flex", alignItems: "baseline" }}>
