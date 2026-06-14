@@ -309,19 +309,31 @@ async function main() {
   list.faqs = faqs;
   console.log(`✅ Generated ${faqs.length} FAQs`);
 
-  // Step 6 — YouTube videos
-  console.log("\n🎬 Fetching YouTube videos...");
+ // Step 6 — YouTube videos + Product images
+  console.log("\n🎬 Fetching YouTube videos and product images...");
   for (let i = 0; i < list.items.length; i++) {
     const item = list.items[i];
     console.log(`  Searching: ${item.name}...`);
+
+    // YouTube
     const video = await fetchYouTubeVideo(item.name);
     if (video) {
       item.youtube = video;
-      console.log(`  ✅ Found: ${video.title}`);
+      console.log(`  ✅ Video: ${video.title}`);
     } else {
       console.log(`  ⚠️  No video found`);
     }
-    await new Promise(r => setTimeout(r, 200));
+
+    // Product image
+    const imageUrl = await fetchProductImage(item.name, category.category_pt);
+    if (imageUrl) {
+      item.image_url = imageUrl;
+      console.log(`  ✅ Image found`);
+    } else {
+      console.log(`  ⚠️  No image found`);
+    }
+
+    await new Promise(r => setTimeout(r, 300));
   }
 
   // Step 7 — Generate tomorrow's vote options
