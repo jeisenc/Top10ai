@@ -7,7 +7,7 @@ function buildAffiliateUrl(store, hint) {
   const encoded = encodeURIComponent(hint);
   switch (store) {
     case "Amazon":    return `https://www.amazon.es/s?k=${encoded}&tag=aitop10pt-21`;
-    case "Worten":    return `https://www.worten.pt/search?query=${encoded}`;
+    case "Worten":    return `https://www.worten.pt/search?query=${encoded}`;<span style={{ fontSize: 14, flexShrink: 0, marginTop: 1 }}>{"🔍"}</span>
     case "Fnac":      return `https://www.fnac.pt/SearchResult/ResultList.aspx?SCat=0&Search=${encoded}`;
     case "Decathlon": return `https://www.decathlon.pt/search?Ntt=${encoded}`;
     case "Zalando":   return `https://www.zalando.pt/catalog/?q=${encoded}`;
