@@ -1,4 +1,4 @@
-import ArticleLayout from "../../ArticleLayout";
+import ArticleLayout from "../ArticleLayout";
 
 export const metadata = {
   title: "Verão 2026: a IA analisou o que os portugueses mais compram nesta época — ai10pt.top",
