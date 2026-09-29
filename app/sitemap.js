@@ -1,38 +1,30 @@
-import { createClient } from "@supabase/supabase-js";
+import { CATEGORIES, ALL_ARTICLE_SLUGS, SITE_URL } from "../lib/site";
+import { getLatestLists } from "../lib/data";
+
+export const revalidate = 3600;
 
 export default async function sitemap() {
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  );
+  const lists = await getLatestLists();
 
-  const { data } = await supabase
-    .from("daily_lists")
-    .select("slug, created_at")
-    .not("slug", "is", null)
-    .order("created_at", { ascending: false });
+  // Only list category pages that actually have content.
+  const categoryPages = CATEGORIES.filter((c) => lists[c.slug]).map((c) => ({
+    url: `${SITE_URL}/${c.slug}`,
+    lastModified: new Date(lists[c.slug].created_at),
+    changeFrequency: "weekly",
+    priority: c.group === "aspiradores" ? 0.9 : 0.7,
+  }));
 
-  const seen = new Set();
-  const unique = (data || []).filter(row => {
-    if (seen.has(row.slug)) return false;
-    seen.add(row.slug);
-    return true;
-  });
-
-  const categoryPages = unique.map(row => ({
-    url: `https://ai10pt.top/${row.slug}`,
-    lastModified: new Date(row.created_at),
-    changeFrequency: "daily",
-    priority: 0.9,
+  const articlePages = ALL_ARTICLE_SLUGS.map((slug) => ({
+    url: `${SITE_URL}/artigos/${slug}`,
+    changeFrequency: "monthly",
+    priority: 0.5,
   }));
 
   return [
-    {
-      url: "https://ai10pt.top",
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-    },
+    { url: SITE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
     ...categoryPages,
+    { url: `${SITE_URL}/artigos`, changeFrequency: "weekly", priority: 0.5 },
+    ...articlePages,
+    { url: `${SITE_URL}/sobre`, changeFrequency: "yearly", priority: 0.3 },
   ];
 }

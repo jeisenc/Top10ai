@@ -1,0 +1,172 @@
+{
+  "categories": [
+    {
+      "slug": "robots-aspiradores",
+      "category_en": "robot-vacuums",
+      "name": "Robots Aspiradores",
+      "group": "aspiradores",
+      "emoji": "🤖",
+      "title": "Os Melhores Robots Aspiradores em Portugal (2026)",
+      "description": "Comparação dos melhores robots aspiradores à venda em Portugal: Roborock, Xiaomi, Dreame, iRobot e mais. Qual comprar, do económico ao topo de gama.",
+      "brief": "Robot vacuums across all price points (roughly 150€ to 1200€). Mix budget, mid-range and premium. Include at least 3 models that also mop. Prefer brands widely sold in Portugal: Roborock, Xiaomi, Dreame, iRobot, Ecovacs, Rowenta, Cecotec, Eufy."
+    },
+    {
+      "slug": "robot-aspirador-ate-200-euros",
+      "category_en": "robot-vacuums-under-200",
+      "name": "Robots Aspiradores até 200€",
+      "group": "aspiradores",
+      "emoji": "💶",
+      "title": "Melhor Robot Aspirador até 200€ em Portugal (2026)",
+      "description": "Os melhores robots aspiradores baratos até 200€ à venda em Portugal. Qual é o melhor em qualidade-preço e o que esperar deste orçamento.",
+      "brief": "Only robot vacuums with a typical Portuguese retail price of 200€ or less. Focus on value for money. Be honest about limitations of this price range (navigation, suction, app)."
+    },
+    {
+      "slug": "robot-aspira-e-lava",
+      "category_en": "robot-vacuum-mop",
+      "name": "Robots que Aspiram e Lavam",
+      "group": "aspiradores",
+      "emoji": "🧽",
+      "title": "Melhor Robot que Aspira e Lava em Portugal (2026)",
+      "description": "Os melhores robots aspiradores com função de lavar (esfregona) à venda em Portugal. Com e sem estação de auto-esvaziamento e lavagem de mopas.",
+      "brief": "Robot vacuums with a mopping function (aspira e lava / passa pano). Cover a range from ~250€ to premium models with self-washing mop docks. Explain mop type (vibrating, rotating, pad) in the reason."
+    },
+    {
+      "slug": "aspiradores-de-po",
+      "category_en": "vacuum-cleaners",
+      "name": "Aspiradores de Pó",
+      "group": "aspiradores",
+      "emoji": "🧹",
+      "title": "Os Melhores Aspiradores de Pó em Portugal (2026)",
+      "description": "Qual o melhor aspirador para casa? Comparação de aspiradores de trenó e verticais à venda em Portugal, com e sem saco, por orçamento.",
+      "brief": "Household vacuum cleaners (not robots): mix of canister/sled (trenó, with and without bag) and cordless stick vacuums. Brands sold in Portugal: Rowenta, Bosch, Dyson, Philips, Samsung, Xiaomi, Miele, Hoover, Taurus."
+    },
+    {
+      "slug": "aspiradores-sem-fios",
+      "category_en": "cordless-stick-vacuums",
+      "name": "Aspiradores Verticais Sem Fios",
+      "group": "aspiradores",
+      "emoji": "🔋",
+      "title": "Os Melhores Aspiradores Sem Fios em Portugal (2026)",
+      "description": "Os melhores aspiradores verticais sem fios à venda em Portugal: autonomia, potência e preço comparados, do Dyson às alternativas económicas.",
+      "brief": "Cordless stick vacuums only. Range from ~100€ to premium Dyson. Mention battery autonomy and whether the battery is removable in the reason."
+    },
+    {
+      "slug": "aspiradores-pelos-animais",
+      "category_en": "pet-hair-vacuums",
+      "name": "Aspiradores para Pelos de Animais",
+      "group": "aspiradores",
+      "emoji": "🐾",
+      "title": "Melhor Aspirador para Pelos de Animais em Portugal (2026)",
+      "description": "Os melhores aspiradores e robots aspiradores para casas com cães e gatos, à venda em Portugal. Escovas anti-emaranhamento e filtros HEPA.",
+      "brief": "Vacuums (stick, canister and robot) that handle pet hair well: anti-tangle brushes, strong suction, HEPA filtration. Mix of types and price points."
+    },
+    {
+      "slug": "black-friday-aspiradores",
+      "category_en": "black-friday-vacuums",
+      "name": "Black Friday: Aspiradores a Vigiar",
+      "group": "aspiradores",
+      "emoji": "🏷️",
+      "title": "Black Friday 2026: Robots Aspiradores e Aspiradores a Vigiar",
+      "description": "Os robots aspiradores e aspiradores que costumam baixar de preço na Black Friday em Portugal. Guia do que vigiar antes de 27 de novembro.",
+      "brief": "Robot vacuums and stick vacuums that are worth watching for Black Friday 2026 (27 November) in Portugal: popular models that historically get discounted. Do NOT claim any specific discount or deal is currently live. The reason should say why it is worth waiting for and what a good price would look like."
+    },
+    {
+      "slug": "ar-condicionado-climatizacao",
+      "category_en": "air-conditioning",
+      "name": "Ar Condicionado e Climatização",
+      "group": "casa",
+      "emoji": "❄️",
+      "title": "Melhor Ar Condicionado em Portugal (2026): Guia de Compra",
+      "description": "Os melhores aparelhos de ar condicionado inverter para aquecer e arrefecer, à venda em Portugal. Daikin, Mitsubishi, LG, Samsung e mais.",
+      "brief": "Inverter split and portable air conditioners that both heat and cool, sold in Portugal. Mention energy class and whether it is split or portable in the reason."
+    },
+    {
+      "slug": "aquecedores",
+      "category_en": "electric-heaters",
+      "name": "Aquecedores Elétricos",
+      "group": "casa",
+      "emoji": "🔥",
+      "title": "Os Melhores Aquecedores Elétricos em Portugal (2026)",
+      "description": "Qual o aquecedor que gasta menos? Comparação de aquecedores a óleo, cerâmicos, convetores e desumidificadores à venda em Portugal.",
+      "brief": "Electric heaters for Portuguese homes: oil-filled radiators, ceramic fan heaters, convectors, and a couple of dehumidifiers (common need in Portuguese winters). Comment on running cost in the reason."
+    },
+    {
+      "slug": "pequenos-eletrodomesticos-cozinha",
+      "category_en": "small-kitchen-appliances",
+      "name": "Pequenos Eletrodomésticos de Cozinha",
+      "group": "casa",
+      "emoji": "🍳",
+      "title": "Os Melhores Pequenos Eletrodomésticos de Cozinha em Portugal (2026)",
+      "description": "Fritadeiras de ar, robots de cozinha, máquinas de café e mais: os pequenos eletrodomésticos mais úteis à venda em Portugal.",
+      "brief": "Small kitchen appliances: at least 3 air fryers, plus kitchen robots, coffee machines, blenders. Brands sold in Portugal: Philips, Ninja, Cosori, Tefal, Moulinex, De'Longhi, Krups."
+    },
+    {
+      "slug": "auscultadores",
+      "category_en": "wireless-headphones",
+      "name": "Auscultadores Sem Fios",
+      "group": "tecnologia",
+      "emoji": "🎧",
+      "title": "Os Melhores Auscultadores Sem Fios em Portugal (2026)",
+      "description": "Os melhores auscultadores e earbuds sem fios com cancelamento de ruído à venda em Portugal: Sony, Apple, Bose, Samsung e opções económicas.",
+      "brief": "Wireless headphones and earbuds, mix of over-ear and in-ear, noise cancelling, from budget (~50€) to premium."
+    },
+    {
+      "slug": "portateis",
+      "category_en": "laptops",
+      "name": "Portáteis até 800€",
+      "group": "tecnologia",
+      "emoji": "💻",
+      "title": "Os Melhores Portáteis até 800€ em Portugal (2026)",
+      "description": "Os melhores portáteis até 800 euros para estudar e trabalhar, à venda em Portugal. Lenovo, ASUS, HP, Acer e mais.",
+      "brief": "Laptops with a typical Portuguese retail price of 800€ or less, for students and home/office use. Mention CPU, RAM and SSD briefly in the reason."
+    }
+  ],
+  "groups": {
+    "aspiradores": "Aspiradores e robots aspiradores",
+    "casa": "Casa e climatização",
+    "tecnologia": "Tecnologia"
+  },
+  "retired": {
+    "ar-condicionado": "ar-condicionado-climatizacao",
+    "ar-condicionado-refrigeracao": "ar-condicionado-climatizacao",
+    "ventoinhas-arrefecimento": "ar-condicionado-climatizacao",
+    "purificadores-ar-humidificadores": "aquecedores",
+    "fritadeiras-de-ar": "pequenos-eletrodomesticos-cozinha",
+    "bebidas-refrescos": "",
+    "repelentes-insetos-controlo-pragas": "",
+    "bagagens-acessorios-viagem": "",
+    "equipamentos-desportos-aquaticos": "",
+    "fatos-banho-roupa-praia": "",
+    "equipamentos-campismo-aventura": "",
+    "grelhadores-equipamentos-barbecue": "",
+    "cuidados-pele-protecao-solar": "",
+    "oculos-sol-oculos": "",
+    "equipamentos-desporto-fitness": "",
+    "moveis-decoracao": "",
+    "suplementos-nutricao-desportiva": "",
+    "calcado-sapatos": "",
+    "perfumes-fragrancias": "",
+    "acessorios-gaming": "",
+    "colchoes-roupa-cama": "",
+    "artigos-festas-eventos": "",
+    "mochilas-bagagem": "",
+    "bicicletas-equipamentos-ciclismo": "",
+    "grelhadores-cozinha-exterior": "",
+    "camaras-fotografia": "",
+    "decoracao-iluminacao-casa": "",
+    "tenis-calcado-desportivo": "",
+    "sandalias-calcado-verao": "",
+    "ventoinhas-refrigeracao": "",
+    "vestidos-tunicas-praia": "",
+    "fatos-de-banho": "",
+    "bicicletas-ciclismo": "",
+    "grelhadores-barbecues": "",
+    "maquinas-lavar-roupa": "",
+    "presentes-dia-mae": "",
+    "jardim-exterior": "",
+    "moveis-exterior-jardim": "",
+    "protetor-solar": "",
+    "sapatilhas": "",
+    "moda-verao": ""
+  }
+}

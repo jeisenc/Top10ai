@@ -1,6 +1,29 @@
+// Daily refresh job.
+//
+// The site now has a FIXED set of guides (lib/categories.json). Each run picks
+// the guides that are stalest (never generated, or oldest update) and
+// regenerates them. It never invents new categories.
+//
+// Env:
+//   ANTHROPIC_API_KEY, NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY  (required)
+//   ANTHROPIC_MODEL     model to use (default claude-sonnet-5-5)
+//   REFRESH_PER_RUN     how many guides to refresh per run (default 2)
+//   MIN_AGE_DAYS        don't refresh a guide updated less than this many days ago (default 3)
+//   ONLY_SLUG           refresh just this one guide (handy for manual runs)
+//   YOUTUBE_API_KEY, GOOGLE_SEARCH_API_KEY, GOOGLE_SEARCH_ENGINE_ID   (optional extras)
+//   REVALIDATE_SECRET   (optional) clears the Vercel cache after saving
+
 const Anthropic = require("@anthropic-ai/sdk");
 const { createClient } = require("@supabase/supabase-js");
 const ws = require("ws");
+const { categories } = require("../lib/categories.json");
+
+const SITE = "https://ai10pt.top";
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
+const REFRESH_PER_RUN = parseInt(process.env.REFRESH_PER_RUN || "2", 10);
+const MIN_AGE_DAYS = parseFloat(process.env.MIN_AGE_DAYS || "3");
+const STORES = ["Worten", "Amazon"];
+const TAGS = ["Melhor escolha", "Melhor qualidade-preço", "Mais económico", "Premium", "Mais popular"];
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const supabase = createClient(
@@ -8,377 +31,222 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   { realtime: { transport: ws } }
 );
-async function pingIndexNow(slug) {
-  try {
-    const url = slug ? `https://ai10pt.top/${slug}` : "https://ai10pt.top";
-    const response = await fetch("https://api.indexnow.org/indexnow", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        host: "ai10pt.top",
-        key: "aitop10pt-indexnow",
-        urlList: [url, "https://ai10pt.top/sitemap.xml"]
-      })
-    });
-    console.log(`✅ IndexNow ping sent for: ${url} — status ${response.status}`);
-  } catch (err) {
-    console.log("⚠️ IndexNow ping failed:", err.message);
-  }
-}
 
-const SYSTEM_PROMPT = `You are a product recommendation engine for ai10pt.top, a Portuguese consumer website.
-Generate Top 10 product lists for Portuguese shoppers.
-All text must be in European Portuguese (not Brazilian).
-Products must be available in Portugal via Worten, Fnac, Amazon.es, Decathlon, or Zalando.
-Prices must be realistic in euros.
+const SYSTEM_PROMPT = `You write product buying guides for ai10pt.top, a website for shoppers in Portugal.
+All text must be in European Portuguese (Portugal), never Brazilian Portuguese.
+Only recommend real, specific models (brand + exact model name) that are actually sold in Portugal in ${new Date().getFullYear()}, at Worten (worten.pt) or Amazon (amazon.es, which ships to Portugal).
+Prefer current or recent models; do not recommend discontinued products.
+Prices are the typical Portuguese retail price in euros, rounded — they will be shown as "indicative".
+Never invent discounts, ratings, test results or claims you are not confident about.
 Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
 
-async function fetchGoogleTrends() {
-  try {
-    const response = await fetch(
-      "https://trends.google.com/trends/trendingsearches/daily/rss?geo=PT",
-      { headers: { "User-Agent": "Mozilla/5.0" } }
-    );
-    const xml = await response.text();
-    const matches = xml.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>/g) || [];
-    const trends = matches
-      .map(m => m.replace(/<title><!\[CDATA\[/, "").replace(/\]\]><\/title>/, ""))
-      .filter(t => t !== "Daily Search Trends")
-      .slice(0, 10);
-    console.log("Google Trends Portugal:", trends);
-    return trends;
-  } catch (err) {
-    console.log("Could not fetch Google Trends:", err.message);
-    return [];
-  }
-}
-
-async function getRecentSlugs() {
-  // Get the last 14 days of categories to avoid repeats
-  const { data } = await supabase
-    .from("daily_lists")
-    .select("slug, category_pt, created_at")
-    .order("created_at", { ascending: false })
-    .limit(14);
-  return data || [];
-}
-
-async function checkAlreadyGeneratedToday(today) {
-  const startOfDay = `${today}T00:00:00.000Z`;
-  const endOfDay = `${today}T23:59:59.999Z`;
-  const { data } = await supabase
-    .from("daily_lists")
-    .select("id, category_pt, created_at")
-    .gte("created_at", startOfDay)
-    .lte("created_at", endOfDay)
-    .limit(1);
-  return data && data.length > 0 ? data[0] : null;
-}
-
-async function pickCategory(trends, date, recentSlugs) {
-  const today = new Date(date);
-  const month = today.toLocaleString("pt-PT", { month: "long" });
-  const season = getSeason(today.getMonth());
-  const trendsText = trends.length > 0
-    ? `Trending searches in Portugal today: ${trends.join(", ")}`
-    : "No trending data available.";
-
-  const recentText = recentSlugs.length > 0
-    ? `Recent categories (DO NOT repeat or use similar variations of these): ${recentSlugs.map(r => `${r.category_pt} (${r.slug})`).join(", ")}`
-    : "";
-
-  const msg = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 500,
-    messages: [{
-      role: "user",
-      content: `Choose the best product category for a Portuguese shopping website today.
-Date: ${date}, Month: ${month}, Season: ${season}
-${trendsText}
-${recentText}
-
-Rules:
-- NEVER pick a category that is the same or similar to any recent category listed above
-- If garden/outdoor was recent, pick something completely different
-- Choose a specific, distinct category — not a vague variation of something recent
-- Must be a product category people in Portugal are searching for RIGHT NOW
-
-Return ONLY this JSON:
-{
-  "category_en": "english-slug",
-  "category_pt": "Nome em Português",
-  "slug": "slug-em-portugues",
-  "reasoning": "brief explanation of why this is fresh and relevant"
-}`
-    }]
-  });
-
-  let raw = msg.content[0].text.trim();
+function parseJson(msg) {
+  let raw = msg.content.find((b) => b.type === "text")?.text.trim() || "";
   raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
   return JSON.parse(raw);
 }
 
-async function generateVoteOptions(trends, date, todayCategory) {
-  const today = new Date(date);
-  const month = today.toLocaleString("pt-PT", { month: "long" });
-  const season = getSeason(today.getMonth());
-  const trendsText = trends.length > 0
-    ? `Trending searches in Portugal today: ${trends.join(", ")}`
-    : "No trending data available.";
-
+async function ask(prompt, maxTokens) {
   const msg = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 500,
-    messages: [{
-      role: "user",
-      content: `Generate 4 voting options for a "guess tomorrow's Top 10 category" poll on a Portuguese shopping website.
-
-Context:
-- Date: ${date}, Month: ${month}, Season: ${season}
-- ${trendsText}
-- Today's category was: ${todayCategory}
-
-Rules:
-- All 4 options must be different from today's category
-- Short names in European Portuguese (2-4 words max)
-- Mix of trending, seasonal and evergreen categories
-- Make them genuinely hard to guess
-
-Return ONLY this JSON:
-{
-  "options": ["Option 1", "Option 2", "Option 3", "Option 4"]
-}`
-    }]
+    model: MODEL,
+    max_tokens: maxTokens,
+    system: SYSTEM_PROMPT,
+    messages: [{ role: "user", content: prompt }],
   });
-
-  let raw = msg.content[0].text.trim();
-  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-  return JSON.parse(raw).options;
+  return parseJson(msg);
 }
 
-async function generateList(category, date) {
-  const msg = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 4000,
-    system: SYSTEM_PROMPT,
-    messages: [{
-      role: "user",
-      content: `Category: ${category.category_pt}
+async function lastUpdated() {
+  const { data, error } = await supabase
+    .from("daily_lists")
+    .select("slug, created_at")
+    .in("slug", categories.map((c) => c.slug))
+    .order("created_at", { ascending: false });
+  if (error) throw error;
+  const latest = {};
+  for (const row of data || []) if (!latest[row.slug]) latest[row.slug] = new Date(row.created_at);
+  return latest;
+}
+
+async function pickCategories() {
+  if (process.env.ONLY_SLUG) {
+    const one = categories.find((c) => c.slug === process.env.ONLY_SLUG);
+    if (!one) throw new Error(`Unknown ONLY_SLUG: ${process.env.ONLY_SLUG}`);
+    return [one];
+  }
+  const latest = await lastUpdated();
+  const now = Date.now();
+  return categories
+    .map((c, order) => ({ c, order, age: latest[c.slug] ? (now - latest[c.slug]) / 86400000 : Infinity }))
+    .filter((x) => x.age >= MIN_AGE_DAYS)
+    // Never-generated first, then oldest; ties keep the config order (vacuums first).
+    .sort((a, b) => (b.age === a.age ? a.order - b.order : b.age - a.age))
+    .slice(0, REFRESH_PER_RUN)
+    .map((x) => x.c);
+}
+
+async function generateList(cat, date) {
+  const data = await ask(
+    `Guide: "${cat.name}" (page title: "${cat.title}")
+What to include: ${cat.brief}
 Date: ${date}
 
-Generate Top 10. Return this JSON:
+Return this JSON with exactly 10 items, ranked best first:
 {
-  "category": "${category.category_en}",
-  "category_pt": "${category.category_pt}",
-  "slug": "${category.slug}",
-  "date": "${date}",
-  "headline": "one punchy sentence in Portuguese summarising the list",
+  "headline": "one or two sentences in Portuguese introducing the guide and who it is for",
   "items": [
     {
       "rank": 1,
-      "name": "Brand Model",
-      "price_eur": 99,
+      "name": "Brand Exact Model",
+      "price_eur": 199,
       "store": "Worten",
-      "store_url_hint": "search query",
-      "reason_pt": "1-2 sentences in Portuguese",
+      "store_url_hint": "Brand Exact Model",
+      "reason_pt": "2 sentences in Portuguese: who it is for and the main strength/trade-off",
       "tag": "Melhor escolha"
     }
   ]
 }
-Tags: Melhor escolha, Melhor preço, Mais vendido, Premium, Económico
-Return only JSON.`
-    }]
-  });
+Rules:
+- "store" must be "Worten" or "Amazon". Use "Worten" whenever Worten normally sells that model.
+- "store_url_hint" is the exact model name to search for on that store.
+- "tag" is optional; when used it must be one of: ${TAGS.join(", ")}. Use each tag at most once.
+Return only JSON.`,
+    4000
+  );
 
-  let raw = msg.content[0].text.trim();
-  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-  return JSON.parse(raw);
+  const items = (data.items || []).slice(0, 10).map((item, i) => ({
+    rank: i + 1,
+    name: String(item.name || "").trim(),
+    price_eur: Math.round(Number(item.price_eur) || 0),
+    store: STORES.includes(item.store) ? item.store : "Amazon",
+    store_url_hint: String(item.store_url_hint || item.name || "").trim(),
+    reason_pt: String(item.reason_pt || "").trim(),
+    tag: TAGS.includes(item.tag) ? item.tag : null,
+  })).filter((item) => item.name);
+
+  if (items.length < 5) throw new Error(`Only ${items.length} usable items for ${cat.slug}`);
+  return { headline: data.headline, items };
 }
 
-async function generateFAQs(category) {
-  const msg = await anthropic.messages.create({
-    model: "claude-sonnet-4-20250514",
-    max_tokens: 1500,
-    messages: [{
-      role: "user",
-      content: `Generate 7 FAQs in European Portuguese about: "${category.category_pt}"
-Real questions Portuguese consumers search on Google.
-Return ONLY this JSON:
-{
-  "faqs": [
-    { "question": "Qual é o melhor...?", "answer": "Resposta em 2-3 frases." }
-  ]
-}`
-    }]
-  });
+async function generateFAQs(cat) {
+  const data = await ask(
+    `Write 6 FAQs in European Portuguese for a buying guide about "${cat.name}".
+Use the questions Portuguese shoppers actually type into Google (e.g. "qual o melhor...", "vale a pena...", "quanto custa...").
+Answers: 2-3 practical sentences, no specific prices unless it is a range.
+Return ONLY: { "faqs": [ { "question": "...", "answer": "..." } ] }`,
+    1500
+  );
+  return data.faqs || [];
+}
 
-  let raw = msg.content[0].text.trim();
-  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-  return JSON.parse(raw).faqs;
-}
-async function fetchProductImage(productName, category) {
-  if (!process.env.GOOGLE_SEARCH_API_KEY || !process.env.GOOGLE_SEARCH_ENGINE_ID) {
-    console.log("  ⚠️  No Google Search API key found");
-    return null;
-  }
-  try {
-    const query = encodeURIComponent(`${productName} ${category}`);
-    const url = `https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${query}&searchType=image&num=1&imgSize=medium&safe=active`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.items && data.items.length > 0) {
-      return data.items[0].link;
-    }
-    return null;
-  } catch (err) {
-    console.log(`  ⚠️  Could not fetch image for ${productName}:`, err.message);
-    return null;
-  }
-}
 async function fetchYouTubeVideo(productName) {
   if (!process.env.YOUTUBE_API_KEY) return null;
   try {
-    const query = encodeURIComponent(`${productName} review análise português portugal`);
-    const url = `https://www.googleapis.com/youtube/v3/search?part=snippet&q=${query}&type=video&relevanceLanguage=pt&regionCode=PT&maxResults=3&key=${process.env.YOUTUBE_API_KEY}`;
-    const response = await fetch(url);
-    const data = await response.json();
-    if (data.items && data.items.length > 0) {
-      const video = data.items[0];
-      return {
-        videoId: video.id.videoId,
-        title: video.snippet.title,
-        channelTitle: video.snippet.channelTitle,
-        thumbnail: video.snippet.thumbnails?.medium?.url || null,
-      };
-    }
-    return null;
+    const q = encodeURIComponent(`${productName} análise review`);
+    const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&q=${q}&type=video&relevanceLanguage=pt&regionCode=PT&maxResults=1&key=${process.env.YOUTUBE_API_KEY}`);
+    const video = (await res.json()).items?.[0];
+    if (!video) return null;
+    return {
+      videoId: video.id.videoId,
+      title: video.snippet.title,
+      channelTitle: video.snippet.channelTitle,
+      thumbnail: video.snippet.thumbnails?.medium?.url || null,
+    };
   } catch (err) {
-    console.log(`  Could not fetch YouTube video for ${productName}:`, err.message);
+    console.log(`  YouTube lookup failed for ${productName}: ${err.message}`);
     return null;
   }
 }
 
-function getSeason(month) {
-  if (month >= 2 && month <= 4) return "Spring (Primavera)";
-  if (month >= 5 && month <= 7) return "Summer (Verão)";
-  if (month >= 8 && month <= 10) return "Autumn (Outono)";
-  return "Winter (Inverno)";
+async function fetchProductImage(productName) {
+  if (!process.env.GOOGLE_SEARCH_API_KEY || !process.env.GOOGLE_SEARCH_ENGINE_ID) return null;
+  try {
+    const q = encodeURIComponent(productName);
+    const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${q}&searchType=image&num=1&imgSize=medium&safe=active`);
+    return (await res.json()).items?.[0]?.link || null;
+  } catch (err) {
+    console.log(`  Image lookup failed for ${productName}: ${err.message}`);
+    return null;
+  }
+}
+
+async function pingIndexNow(urls) {
+  try {
+    const res = await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ host: "ai10pt.top", key: "aitop10pt-indexnow", urlList: urls }),
+    });
+    console.log(`IndexNow: ${res.status}`);
+  } catch (err) {
+    console.log(`IndexNow failed: ${err.message}`);
+  }
+}
+
+async function revalidateSite() {
+  if (!process.env.REVALIDATE_SECRET) return;
+  try {
+    const res = await fetch(`${SITE}/api/revalidate?secret=${encodeURIComponent(process.env.REVALIDATE_SECRET)}`, { method: "POST" });
+    console.log(`Cache refresh: ${res.status}`);
+  } catch (err) {
+    console.log(`Cache refresh failed: ${err.message}`);
+  }
+}
+
+async function refresh(cat, date) {
+  console.log(`\n📝 Refreshing ${cat.name} (/${cat.slug})`);
+  const list = await generateList(cat, date);
+  const faqs = await generateFAQs(cat);
+
+  for (const item of list.items) {
+    const video = await fetchYouTubeVideo(item.name);
+    if (video) item.youtube = video;
+    const image = await fetchProductImage(item.name);
+    if (image) item.image_url = image;
+    await new Promise((r) => setTimeout(r, 300));
+  }
+
+  const row = {
+    category: cat.category_en,
+    category_pt: cat.name,
+    slug: cat.slug,
+    date,
+    headline: list.headline,
+    items: list.items,
+    faqs,
+  };
+  const { error } = await supabase.from("daily_lists").insert(row);
+  if (error) throw error;
+  console.log(`✅ Saved ${list.items.length} items, ${faqs.length} FAQs`);
 }
 
 async function main() {
-  const today = new Date().toISOString().split("T")[0];
-  const tomorrow = new Date();
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
-  const tomorrowDate = tomorrow.toISOString().split("T")[0];
+  const date = new Date().toISOString().split("T")[0];
+  console.log(`🚀 Refresh run ${date} — model ${MODEL}`);
 
-  console.log(`\n🚀 Starting daily generation for ${today}`);
-
-  // ✅ GUARD: Check if already generated today
-  console.log("\n🔍 Checking if already generated today...");
-  const existing = await checkAlreadyGeneratedToday(today);
-  if (existing) {
-    console.log(`⚠️  Already generated today: ${existing.category_pt} at ${existing.created_at}`);
-    console.log("🛑 Stopping to prevent duplicates.");
-    process.exit(0);
+  const todo = await pickCategories();
+  if (!todo.length) {
+    console.log("Nothing is due for a refresh. Done.");
+    return;
   }
-  console.log("✅ No list generated yet today — proceeding.");
+  console.log(`Due: ${todo.map((c) => c.slug).join(", ")}`);
 
-  // Step 1 — Google Trends
-  console.log("\n📈 Fetching Google Trends for Portugal...");
-  const trends = await fetchGoogleTrends();
-
-  // Step 2 — Get recent categories to avoid
-  console.log("\n📋 Fetching recent categories to avoid...");
-  const recentSlugs = await getRecentSlugs();
-  console.log(`   Recent: ${recentSlugs.map(r => r.slug).join(", ")}`);
-
-  // Step 3 — Pick category (avoiding recent ones)
-  console.log("\n🤖 Asking Claude to pick today's category...");
-  const category = await pickCategory(trends, today, recentSlugs);
-  console.log(`✅ Category: ${category.category_pt} (${category.slug})`);
-  console.log(`   Reason: ${category.reasoning}`);
-
-  // Step 4 — Generate Top 10
-  console.log("\n📝 Generating Top 10 list...");
-  const list = await generateList(category, today);
-  console.log(`✅ Generated ${list.items.length} items`);
-
-  // Step 5 — Generate FAQs
-  console.log("\n❓ Generating FAQs...");
-  const faqs = await generateFAQs(category);
-  list.faqs = faqs;
-  console.log(`✅ Generated ${faqs.length} FAQs`);
-
- // Step 6 — YouTube videos + Product images
-  console.log("\n🎬 Fetching YouTube videos and product images...");
-  for (let i = 0; i < list.items.length; i++) {
-    const item = list.items[i];
-    console.log(`  Searching: ${item.name}...`);
-
-    // YouTube
-    const video = await fetchYouTubeVideo(item.name);
-    if (video) {
-      item.youtube = video;
-      console.log(`  ✅ Video: ${video.title}`);
-    } else {
-      console.log(`  ⚠️  No video found`);
+  const done = [];
+  for (const cat of todo) {
+    try {
+      await refresh(cat, date);
+      done.push(cat);
+    } catch (err) {
+      console.error(`❌ ${cat.slug}: ${err.message}`);
     }
-
-    // Product image
-    const imageUrl = await fetchProductImage(item.name, category.category_pt);
-    if (imageUrl) {
-      item.image_url = imageUrl;
-      console.log(`  ✅ Image found`);
-    } else {
-      console.log(`  ⚠️  No image found`);
-    }
-
-    await new Promise(r => setTimeout(r, 300));
   }
 
-  // Step 7 — Generate tomorrow's vote options
-  console.log("\n🗳️  Generating tomorrow's vote options...");
-  const voteOptions = await generateVoteOptions(trends, tomorrowDate, category.category_pt);
-  console.log(`✅ Vote options: ${voteOptions.join(", ")}`);
-
-  // Step 8 — Save list to Supabase
-  console.log("\n💾 Saving Top 10 to Supabase...");
-  const { error: listError } = await supabase.from("daily_lists").insert(list);
-  if (listError) {
-    console.error("❌ List save error:", listError);
-    process.exit(1);
+  if (done.length) {
+    await revalidateSite();
+    await pingIndexNow([SITE, ...done.map((c) => `${SITE}/${c.slug}`), `${SITE}/sitemap.xml`]);
   }
-  console.log("✅ List saved!");
-
-  // Step 9 — Save vote options for tomorrow
-  console.log("💾 Saving vote options for tomorrow...");
-  await supabase.from("vote_options").delete().eq("vote_date", tomorrowDate);
-  const { error: voteOptError } = await supabase
-    .from("vote_options")
-    .insert({ vote_date: tomorrowDate, options: voteOptions });
-
-  if (!voteOptError) {
-    await supabase.from("daily_votes").delete().eq("vote_date", tomorrowDate);
-    for (const option of voteOptions) {
-      await supabase.from("daily_votes").insert({
-        vote_date: tomorrowDate,
-        option_text: option,
-        vote_count: 0,
-      });
-    }
-    console.log("✅ Vote options saved!");
-  } else {
-    console.error("❌ Vote options error:", voteOptError);
-  }
-
-// Ping search engines to index the new page immediately
-  console.log("\n🔍 Pinging search engines...");
-  await pingIndexNow(category.slug);
-  await pingIndexNow("");
-
-  console.log(`\n✅ All done!`);
-  console.log(`   Today: ${category.category_pt} → ai10pt.top/${category.slug}`);
-  console.log(`   Tomorrow's vote options ready ✓`);
+  console.log(`\nDone: ${done.length}/${todo.length} refreshed.`);
+  if (done.length < todo.length) process.exit(1);
 }
 
 main().catch((err) => {

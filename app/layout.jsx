@@ -1,4 +1,5 @@
 import { Plus_Jakarta_Sans } from "next/font/google";
+import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
@@ -8,8 +9,9 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "AI Top 10 Portugal — Os melhores produtos selecionados por IA",
-  description: "Os 10 melhores produtos disponíveis em Portugal hoje, selecionados por inteligência artificial.",
+  metadataBase: new URL("https://ai10pt.top"),
+  title: "ai10pt.top — Guias de compra para Portugal",
+  description: "Guias de compra para Portugal: robots aspiradores, aspiradores, climatização e tecnologia, comparados e atualizados regularmente.",
   icons: {
     icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
   },
@@ -17,7 +19,7 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt" className={jakarta.variable}>
+    <html lang="pt-PT" className={jakarta.variable}>
       <head>
         <meta name="google-site-verification" content="6QnVFuih8z416buOe7OoE8ux9fM78ilKEa2hhZzK2yc" />
         <script
