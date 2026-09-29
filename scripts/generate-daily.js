@@ -40,6 +40,13 @@ Prices are the typical Portuguese retail price in euros, rounded — they will b
 Never invent discounts, ratings, test results or claims you are not confident about.
 Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
 
+// GitHub Actions shows these as annotations on the run page.
+function annotate(level, message) {
+  if (!process.env.GITHUB_ACTIONS) return;
+  const clean = String(message).replace(/%/g, "%25").replace(/\r/g, "%0D").replace(/\n/g, "%0A");
+  console.log(`::${level}::${clean}`);
+}
+
 function parseJson(msg) {
   let raw = msg.content.find((b) => b.type === "text")?.text.trim() || "";
   raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
@@ -184,10 +191,14 @@ async function pingIndexNow(urls) {
 }
 
 async function revalidateSite() {
-  if (!process.env.REVALIDATE_SECRET) return;
+  if (!process.env.REVALIDATE_SECRET) {
+    annotate("warning", "REVALIDATE_SECRET not set: pages will update within the hour instead of immediately");
+    return;
+  }
   try {
     const res = await fetch(`${SITE}/api/revalidate?secret=${encodeURIComponent(process.env.REVALIDATE_SECRET)}`, { method: "POST" });
     console.log(`Cache refresh: ${res.status}`);
+    if (!res.ok) annotate("warning", `Cache refresh returned ${res.status}`);
   } catch (err) {
     console.log(`Cache refresh failed: ${err.message}`);
   }
@@ -218,6 +229,7 @@ async function refresh(cat, date) {
   const { error } = await supabase.from("daily_lists").insert(row);
   if (error) throw error;
   console.log(`✅ Saved ${list.items.length} items, ${faqs.length} FAQs`);
+  annotate("notice", `${cat.slug}: saved ${list.items.length} items, ${faqs.length} FAQs`);
 }
 
 async function main() {
@@ -238,6 +250,7 @@ async function main() {
       done.push(cat);
     } catch (err) {
       console.error(`❌ ${cat.slug}: ${err.message}`);
+      annotate("error", `${cat.slug}: ${err.message}`);
     }
   }
 
@@ -251,5 +264,6 @@ async function main() {
 
 main().catch((err) => {
   console.error("Fatal error:", err);
+  annotate("error", `Fatal: ${err.message || err}`);
   process.exit(1);
 });
