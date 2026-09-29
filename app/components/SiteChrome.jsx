@@ -39,7 +39,7 @@ export function SiteFooter() {
           </nav>
         </div>
         <p>
-          Este site contém links de afiliado: se comprares através deles podemos receber uma comissão, sem custo adicional para ti.
+          Este site contém links de afiliado: se comprares através deles podemos receber uma comissão, sem custo adicional para ti. Como Afiliado da Amazon, recebo por compras qualificadas efetuadas.
           As listas são preparadas com ajuda de IA; os preços são indicativos e podem mudar — confirma sempre na loja.
         </p>
       </div>
