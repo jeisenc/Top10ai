@@ -38,7 +38,7 @@ Only recommend real, specific models (brand + exact model name) that are actuall
 Prefer current or recent models; do not recommend discontinued products.
 Prices are the typical Portuguese retail price in euros, rounded — they will be shown as "indicative".
 Never invent discounts, ratings, test results or claims you are not confident about.
-Return ONLY valid JSON — no markdown, no explanation, no code fences.`;
+Always answer by calling the "save" tool with the requested fields.`;
 
 // GitHub Actions shows these as annotations on the run page.
 function annotate(level, message) {
@@ -47,20 +47,69 @@ function annotate(level, message) {
   console.log(`::${level}::${clean}`);
 }
 
-function parseJson(msg) {
-  let raw = msg.content.find((b) => b.type === "text")?.text.trim() || "";
-  raw = raw.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
-  return JSON.parse(raw);
-}
+const LIST_SCHEMA = {
+  type: "object",
+  properties: {
+    headline: { type: "string" },
+    items: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          rank: { type: "integer" },
+          name: { type: "string" },
+          price_eur: { type: "number" },
+          store: { type: "string", enum: STORES },
+          store_url_hint: { type: "string" },
+          reason_pt: { type: "string" },
+          tag: { type: "string" },
+        },
+        required: ["rank", "name", "price_eur", "store", "store_url_hint", "reason_pt"],
+      },
+    },
+  },
+  required: ["headline", "items"],
+};
 
-async function ask(prompt, maxTokens) {
-  const msg = await anthropic.messages.create({
-    model: MODEL,
-    max_tokens: maxTokens,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: prompt }],
-  });
-  return parseJson(msg);
+const FAQ_SCHEMA = {
+  type: "object",
+  properties: {
+    faqs: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: { question: { type: "string" }, answer: { type: "string" } },
+        required: ["question", "answer"],
+      },
+    },
+  },
+  required: ["faqs"],
+};
+
+// Forces the model to answer through a tool with a JSON schema, so the reply
+// is always well-formed data. Retries once on a bad or cut-off reply.
+async function ask(prompt, maxTokens, schema) {
+  let lastErr;
+  for (let attempt = 1; attempt <= 2; attempt++) {
+    try {
+      const msg = await anthropic.messages.create({
+        model: MODEL,
+        max_tokens: maxTokens,
+        system: SYSTEM_PROMPT,
+        tools: [{ name: "save", description: "Save the result.", input_schema: schema }],
+        tool_choice: { type: "tool", name: "save" },
+        messages: [{ role: "user", content: prompt }],
+      });
+      if (msg.stop_reason === "max_tokens") throw new Error("reply was cut off (max_tokens)");
+      const block = msg.content.find((b) => b.type === "tool_use");
+      if (!block) throw new Error("no structured reply");
+      return block.input;
+    } catch (err) {
+      lastErr = err;
+      console.log(`  attempt ${attempt} failed: ${err.message}`);
+    }
+  }
+  throw lastErr;
 }
 
 async function lastUpdated() {
@@ -118,7 +167,8 @@ Rules:
 - "store_url_hint" is the exact model name to search for on that store.
 - "tag" is optional; when used it must be one of: ${TAGS.join(", ")}. Use each tag at most once.
 Return only JSON.`,
-    4000
+    8000,
+    LIST_SCHEMA
   );
 
   const items = (data.items || []).slice(0, 10).map((item, i) => ({
@@ -141,7 +191,8 @@ async function generateFAQs(cat) {
 Use the questions Portuguese shoppers actually type into Google (e.g. "qual o melhor...", "vale a pena...", "quanto custa...").
 Answers: 2-3 practical sentences, no specific prices unless it is a range.
 Return ONLY: { "faqs": [ { "question": "...", "answer": "..." } ] }`,
-    1500
+    3000,
+    FAQ_SCHEMA
   );
   return data.faqs || [];
 }
