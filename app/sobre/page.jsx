@@ -43,10 +43,10 @@ export default function Sobre() {
             </div>
             <h1 style={{ fontSize: "clamp(24px, 6vw, 36px)", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.8px", marginBottom: 16, lineHeight: 1.1 }}>
               O Top 10 mais relevante<br />
-              <span style={{ color: "#c0392b" }}>para Portugal</span>, todos os dias
+              <span style={{ color: "#c0392b" }}>para Portugal</span>
             </h1>
             <p style={{ fontSize: "clamp(14px, 3.5vw, 16px)", color: "#3d3d3d", lineHeight: 1.7, maxWidth: 580 }}>
-              O ai10pt.top é o primeiro site português de recomendação de produtos totalmente automatizado por inteligência artificial. Todos os dias, sem intervenção humana, analisamos o que os portugueses mais pesquisam e publicamos uma lista com os 10 melhores produtos dessa categoria.
+              O ai10pt.top publica guias de compra para Portugal, com foco em aspiradores e robots aspiradores. Cada guia compara os modelos à venda nas lojas portuguesas e é atualizado regularmente com a ajuda de inteligência artificial.
             </p>
           </div>
 
@@ -67,12 +67,12 @@ export default function Sobre() {
 
             <div className="steps-grid">
               {[
-                { step: "01", icon: "📈", title: "Análise de tendências", desc: "O sistema consulta automaticamente o Google Trends Portugal para identificar os temas mais pesquisados naquele dia." },
-                { step: "02", icon: "🧠", title: "IA escolhe a categoria", desc: "O modelo de IA Claude (da Anthropic) cruza as tendências com a época do ano, eventos atuais e histórico recente para escolher a categoria mais relevante." },
-                { step: "03", icon: "🛒", title: "Geração do Top 10", desc: "A IA gera uma lista com os 10 melhores produtos disponíveis em Portugal — com preços reais, lojas e justificação para cada escolha." },
+                { step: "01", icon: "📋", title: "Categorias fixas", desc: "Mantemos um conjunto pequeno de guias sobre aquilo que os portugueses realmente pesquisam, como robots aspiradores e aspiradores sem fios." },
+                { step: "02", icon: "🔄", title: "Atualização regular", desc: "Todos os dias os guias mais antigos são revistos, para que os modelos e preços indicativos se mantenham atuais." },
+                { step: "03", icon: "🛒", title: "Geração do Top 10", desc: "O modelo de IA Claude (da Anthropic) compara os modelos à venda na Worten e na Amazon e explica a escolha de cada um. Os preços são indicativos." },
                 { step: "04", icon: "❓", title: "Perguntas frequentes", desc: "São geradas automaticamente 7 perguntas frequentes sobre a categoria, com respostas detalhadas para ajudar na decisão de compra." },
                 { step: "05", icon: "🎬", title: "Vídeos de análise", desc: "Para cada produto, o sistema encontra automaticamente o melhor vídeo de análise em português no YouTube." },
-                { step: "06", icon: "⚡", title: "Publicação automática", desc: "Tudo é publicado automaticamente no site sem qualquer intervenção humana, pronto para consulta logo pela manhã." },
+                { step: "06", icon: "⚡", title: "Publicação automática", desc: "Os guias são publicados automaticamente, com a data da última atualização sempre visível." },
               ].map((s, i) => (
                 <div key={i} className="step-card">
                   <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
@@ -96,7 +96,7 @@ export default function Sobre() {
               <li><strong>Conteúdo gerado por IA:</strong> Todas as listas, descrições e respostas são geradas por inteligência artificial. Embora nos esforcemos pela precisão, recomendamos sempre verificar os preços e disponibilidade diretamente nas lojas.</li>
               <li><strong>Links de afiliado:</strong> Alguns links para produtos são links de afiliado. Ao comprar através deles, podemos receber uma pequena comissão sem qualquer custo adicional para si. Isto ajuda a manter o site gratuito.</li>
               <li><strong>Sem patrocínios:</strong> As nossas recomendações não são pagas ou influenciadas por marcas. A IA escolhe os produtos com base em relevância e popularidade.</li>
-              <li><strong>Atualização diária:</strong> O site é atualizado automaticamente todos os dias às 06:00, com uma nova categoria escolhida com base nas tendências de pesquisa em Portugal.</li>
+              <li><strong>Atualização regular:</strong> Todos os dias revemos automaticamente os guias mais antigos. Cada página mostra a data da última atualização.</li>
             </ul>
 
             <h2>Tecnologia utilizada</h2>
@@ -105,8 +105,7 @@ export default function Sobre() {
               <li><strong>Frontend:</strong> Next.js, alojado na Vercel</li>
               <li><strong>Base de dados:</strong> Supabase</li>
               <li><strong>Inteligência Artificial:</strong> Claude (Anthropic)</li>
-              <li><strong>Tendências:</strong> Google Trends RSS</li>
-              <li><strong>Vídeos:</strong> YouTube Data API</li>
+                            <li><strong>Vídeos:</strong> YouTube Data API</li>
               <li><strong>Automação:</strong> GitHub Actions</li>
             </ul>
           </div>

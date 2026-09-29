@@ -1,26 +1,36 @@
-name: Generate daily Top 10
+name: Refresh buying guides
 
 on:
   schedule:
     - cron: "0 6 * * *"
   workflow_dispatch:
+    inputs:
+      only_slug:
+        description: "Refresh just this guide (e.g. robots-aspiradores). Leave empty for the normal run."
+        required: false
+        default: ""
+      refresh_per_run:
+        description: "How many guides to refresh"
+        required: false
+        default: "2"
 
 jobs:
-  generate:
+  refresh:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm install @anthropic-ai/sdk @supabase/supabase-js ws
+      - run: npm install --no-save @anthropic-ai/sdk @supabase/supabase-js ws
       - run: node scripts/generate-daily.js
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
+          GOOGLE_SEARCH_API_KEY: ${{ secrets.GOOGLE_SEARCH_API_KEY }}
           GOOGLE_SEARCH_ENGINE_ID: ${{ secrets.GOOGLE_SEARCH_ENGINE_ID }}
+          REVALIDATE_SECRET: ${{ secrets.REVALIDATE_SECRET }}
+          ONLY_SLUG: ${{ github.event.inputs.only_slug }}
+          REFRESH_PER_RUN: ${{ github.event.inputs.refresh_per_run || '2' }}
