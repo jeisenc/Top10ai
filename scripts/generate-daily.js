@@ -97,13 +97,18 @@ async function ask(prompt, maxTokens, schema) {
         max_tokens: maxTokens,
         system: SYSTEM_PROMPT,
         tools: [{ name: "save", description: "Save the result.", input_schema: schema }],
-        tool_choice: { type: "tool", name: "save" },
+        tool_choice: { type: "auto" },
         messages: [{ role: "user", content: prompt }],
       });
       if (msg.stop_reason === "max_tokens") throw new Error("reply was cut off (max_tokens)");
       const block = msg.content.find((b) => b.type === "tool_use");
-      if (!block) throw new Error("no structured reply");
-      return block.input;
+      if (block) return block.input;
+      // Fallback: the model answered in plain text instead of the tool.
+      const text = msg.content.filter((b) => b.type === "text").map((b) => b.text).join("");
+      const start = text.indexOf("{");
+      const end = text.lastIndexOf("}");
+      if (start === -1 || end <= start) throw new Error("no structured reply");
+      return JSON.parse(text.slice(start, end + 1));
     } catch (err) {
       lastErr = err;
       console.log(`  attempt ${attempt} failed: ${err.message}`);
