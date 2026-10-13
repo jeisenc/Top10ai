@@ -47,29 +47,46 @@ function annotate(level, message) {
   console.log(`::${level}::${clean}`);
 }
 
-const LIST_SCHEMA = {
-  type: "object",
-  properties: {
-    headline: { type: "string" },
-    items: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          rank: { type: "integer" },
-          name: { type: "string" },
-          price_eur: { type: "number" },
-          store: { type: "string", enum: STORES },
-          store_url_hint: { type: "string" },
-          reason_pt: { type: "string" },
-          tag: { type: "string" },
+// Built per guide, because the comparison columns (specs) differ by category.
+function listSchema(cat) {
+  const specProps = Object.fromEntries((cat.specs || []).map((s) => [s.key, { type: "string" }]));
+  return {
+    type: "object",
+    properties: {
+      headline: { type: "string" },
+      tips: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: { title: { type: "string" }, text: { type: "string" } },
+          required: ["title", "text"],
         },
-        required: ["rank", "name", "price_eur", "store", "store_url_hint", "reason_pt"],
+      },
+      items: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            rank: { type: "integer" },
+            name: { type: "string" },
+            price_eur: { type: "number" },
+            store: { type: "string", enum: STORES },
+            store_url_hint: { type: "string" },
+            reason_pt: { type: "string" },
+            para_quem: { type: "string" },
+            best_for: { type: "string" },
+            pros: { type: "array", items: { type: "string" } },
+            cons: { type: "array", items: { type: "string" } },
+            specs: { type: "object", properties: specProps },
+            tag: { type: "string" },
+          },
+          required: ["rank", "name", "price_eur", "store", "store_url_hint", "reason_pt", "para_quem", "best_for", "pros", "cons", "specs"],
+        },
       },
     },
-  },
-  required: ["headline", "items"],
-};
+    required: ["headline", "tips", "items"],
+  };
+}
 
 const FAQ_SCHEMA = {
   type: "object",
@@ -146,7 +163,26 @@ async function pickCategories() {
     .map((x) => x.c);
 }
 
+function cleanList(value, max) {
+  return (Array.isArray(value) ? value : [])
+    .map((v) => String(v || "").trim())
+    .filter(Boolean)
+    .slice(0, max);
+}
+
+// Keep only the spec columns this guide defines, dropping empty/unknown values.
+function cleanSpecs(value, defs = []) {
+  const out = {};
+  for (const { key } of defs) {
+    const v = String(value?.[key] ?? "").trim();
+    if (v && v !== "—" && v !== "-") out[key] = v;
+  }
+  return out;
+}
+
 async function generateList(cat, date) {
+  const specKeys = (cat.specs || []).map((sp) => `"${sp.key}": "..."`).join(", ");
+  const specHelp = (cat.specs || []).map((sp) => `${sp.key} = ${sp.label}`).join("; ") || "none";
   const data = await ask(
     `Guide: "${cat.name}" (page title: "${cat.title}")
 What to include: ${cat.brief}
@@ -155,6 +191,9 @@ Date: ${date}
 Return this JSON with exactly 10 items, ranked best first:
 {
   "headline": "one or two sentences in Portuguese introducing the guide and who it is for",
+  "tips": [
+    { "title": "2-4 word topic, e.g. Navegação", "text": "1-2 short sentences in Portuguese on what to look for" }
+  ],
   "items": [
     {
       "rank": 1,
@@ -163,6 +202,11 @@ Return this JSON with exactly 10 items, ranked best first:
       "store": "Worten",
       "store_url_hint": "Brand Exact Model",
       "reason_pt": "2 sentences in Portuguese: who it is for and the main strength/trade-off",
+      "para_quem": "one sentence in Portuguese starting in lower case, completing 'Para quem: …'",
+      "best_for": "2-4 words in Portuguese, e.g. Casas com animais",
+      "pros": ["short strength", "short strength"],
+      "cons": ["short weakness", "short weakness"],
+      "specs": { ${specKeys} },
       "tag": "Melhor escolha"
     }
   ]
@@ -171,9 +215,13 @@ Rules:
 - "store" must be "Worten" or "Amazon". Use "Worten" whenever Worten normally sells that model.
 - "store_url_hint" is the exact model name to search for on that store.
 - "tag" is optional; when used it must be one of: ${TAGS.join(", ")}. Use each tag at most once.
+- "tips": exactly 4 buying tips for this kind of product, in Portuguese (Portugal).
+- "pros" and "cons": exactly 2 each, in Portuguese (Portugal), max 8 words each, concrete and honest. Every product has real weaknesses.
+- "specs": short values (1-3 words) for each key: ${specHelp}. Use "Sim"/"Não" for yes/no features. If you are not sure of a value, write "—" rather than guessing.
+- Write in European Portuguese (pt-PT), never Brazilian Portuguese.
 Return only JSON.`,
-    8000,
-    LIST_SCHEMA
+    12000,
+    listSchema(cat)
   );
 
   const items = (data.items || []).slice(0, 10).map((item, i) => ({
@@ -183,11 +231,20 @@ Return only JSON.`,
     store: STORES.includes(item.store) ? item.store : "Amazon",
     store_url_hint: String(item.store_url_hint || item.name || "").trim(),
     reason_pt: String(item.reason_pt || "").trim(),
+    para_quem: String(item.para_quem || "").trim() || null,
+    best_for: String(item.best_for || "").trim() || null,
+    pros: cleanList(item.pros, 3),
+    cons: cleanList(item.cons, 3),
+    specs: cleanSpecs(item.specs, cat.specs),
     tag: TAGS.includes(item.tag) ? item.tag : null,
   })).filter((item) => item.name);
 
   if (items.length < 5) throw new Error(`Only ${items.length} usable items for ${cat.slug}`);
-  return { headline: data.headline, items };
+  const tips = (data.tips || [])
+    .map((t) => ({ title: String(t?.title || "").trim(), text: String(t?.text || "").trim() }))
+    .filter((t) => t.title && t.text)
+    .slice(0, 4);
+  return { headline: data.headline, tips, items };
 }
 
 async function generateFAQs(cat) {
@@ -279,10 +336,18 @@ async function refresh(cat, date) {
     slug: cat.slug,
     date,
     headline: list.headline,
+    tips: list.tips,
     items: list.items,
     faqs,
   };
-  const { error } = await supabase.from("daily_lists").insert(row);
+  let { error } = await supabase.from("daily_lists").insert(row);
+  // The "tips" column is new. Until it's added in Supabase, save without it
+  // rather than failing the whole refresh.
+  if (error && /tips/.test(error.message || "")) {
+    annotate("warning", "Column daily_lists.tips is missing: run  alter table daily_lists add column tips jsonb;  in Supabase. Saved without tips.");
+    delete row.tips;
+    ({ error } = await supabase.from("daily_lists").insert(row));
+  }
   if (error) throw error;
   console.log(`✅ Saved ${list.items.length} items, ${faqs.length} FAQs`);
   annotate("notice", `${cat.slug}: saved ${list.items.length} items, ${faqs.length} FAQs`);
