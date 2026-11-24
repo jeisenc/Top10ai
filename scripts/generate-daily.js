@@ -283,7 +283,13 @@ async function fetchProductImage(productName) {
   try {
     const q = encodeURIComponent(productName);
     const res = await fetch(`https://www.googleapis.com/customsearch/v1?key=${process.env.GOOGLE_SEARCH_API_KEY}&cx=${process.env.GOOGLE_SEARCH_ENGINE_ID}&q=${q}&searchType=image&num=1&imgSize=medium&safe=active`);
-    return (await res.json()).items?.[0]?.link || null;
+    const body = await res.json();
+    // Log API errors (quota, key, disabled API) instead of silently returning nothing.
+    if (!res.ok || body.error) {
+      console.log(`  Image search error ${res.status}: ${body.error?.message || "unknown"}`);
+      return null;
+    }
+    return body.items?.[0]?.link || null;
   } catch (err) {
     console.log(`  Image lookup failed for ${productName}: ${err.message}`);
     return null;
