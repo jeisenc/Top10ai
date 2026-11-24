@@ -1,10 +1,19 @@
 import { brandOf, priceText, buyLabel, roleLabel } from "../../lib/site";
 
+// Product photo if the daily job found one, otherwise the thumbnail of the
+// review video (the old design showed these), otherwise the brand name.
+function imageFor(item) {
+  if (item.image_url) return item.image_url;
+  if (item.youtube?.videoId) return `https://i.ytimg.com/vi/${item.youtube.videoId}/hqdefault.jpg`;
+  return item.youtube?.thumbnail || null;
+}
+
 export function ProductImage({ item, className = "" }) {
+  const src = imageFor(item);
   return (
-    <div className={`pimg ${className}`}>
-      {item.image_url ? (
-        <img src={item.image_url} alt={item.name} loading="lazy" />
+    <div className={`pimg ${src && !item.image_url ? "pimg-video " : ""}${className}`}>
+      {src ? (
+        <img src={src} alt={item.name} loading="lazy" />
       ) : (
         <span className="pimg-brand" aria-hidden="true">{brandOf(item.name)}</span>
       )}
