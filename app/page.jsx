@@ -7,7 +7,7 @@ export const revalidate = 3600;
 export const metadata = {
   title: "Melhores Robots Aspiradores e Aspiradores em Portugal — Guias de Compra | ai10pt.top",
   description: "Guias de compra para Portugal: os melhores robots aspiradores, aspiradores sem fios, climatização e tecnologia, comparados e atualizados regularmente.",
-  alternates: { canonical: SITE_URL },
+  alternates: { canonical: `${SITE_URL}/` },
 };
 
 function CategoryCard({ cat, list }) {
